@@ -69,7 +69,7 @@ services:
             
     oe.openelis.org:
         container_name: openelisglobal-webapp 
-        image: itechuw/openelis-global-2:3.2.1.2 
+        image: itechuw/openelis-global-2:develop 
         platform: linux/amd64  
         depends_on:
             - db.openelis.org
@@ -104,6 +104,7 @@ services:
             - ./configs/programs/:/var/lib/openelis-global/programs
             - ./configs/configuration:/var/lib/openelis-global/configuration
             - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
+            - ./configs/analyzer-defaults:/data/analyzer-defaults:ro
         secrets:
             - source: common.properties
             
@@ -142,7 +143,7 @@ services:
             -  key_trust-store-volume:/etc/openelis-global 
        
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:3.2.1.2
+        image: itechuw/openelis-global-2-frontend:develop
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -185,7 +186,24 @@ services:
             TZ: America/New_York
         logging: *local-logging    
         volumes:
-            - /var/run/docker.sock:/var/run/docker.sock            
+            - /var/run/docker.sock:/var/run/docker.sock   
+
+    openelis-analyzer-bridge:
+        image: itechuw/openelis-analyzer-bridge:latest
+        ports:
+            - "8442:8443" # HTTPS API port
+            - "12000:12001" # ASTM listen port
+        volumes:
+            - ./configs/astm/configuration.yml:/app/configuration.yml:ro
+        environment:
+            - SPRING_PROFILES_ACTIVE=dev
+            - LOGGING_LEVEL_ORG_ITECH=TRACE
+            - ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI=https://oe:8443/api/OpenELIS-Global/analyzer/astm
+            - ORG_ITECH_AHB_LISTEN_ASTM_SERVER_PORT=12001
+            # - ORG_ITECH_AHB_FORWARD_ASTM_SERVER_HOST_NAME=
+            # - ORG_ITECH_AHB_FORWARD_ASTM_SERVER_PORT=
+        
+        restart: unless-stopped                 
             
 secrets: 
   common.properties:
