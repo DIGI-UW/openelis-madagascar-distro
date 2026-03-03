@@ -189,7 +189,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock   
 
     openelis-analyzer-bridge:
-        image: itechuw/openelis-analyzer-bridge:latest
+        image: itechuw/openelis-analyzer-bridge:develop
         ports:
             - "8442:8443" # HTTPS API port
             - "12000:12001" # ASTM listen port
