@@ -190,6 +190,7 @@ services:
 
     openelis-analyzer-bridge:
         image: itechuw/openelis-analyzer-bridge:develop
+        platform: linux/amd64
         ports:
             - "8442:8443" # HTTPS API port
             - "12000:12001" # ASTM listen port
@@ -202,7 +203,7 @@ services:
             - ORG_ITECH_AHB_LISTEN_ASTM_SERVER_PORT=12001
             # - ORG_ITECH_AHB_FORWARD_ASTM_SERVER_HOST_NAME=
             # - ORG_ITECH_AHB_FORWARD_ASTM_SERVER_PORT=
-        
+            - JAVA_OPTS=-Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD} -Djavax.net.ssl.trustStoreType=pkcs12 -Djavax.net.ssl.keyStore=${SSL_KEYSTORE_PATH} -Djavax.net.ssl.keyStorePassword=${SSL_KEYSTORE_PASSWORD} -Djavax.net.ssl.keyStoreType=pkcs12
         restart: unless-stopped                 
             
 secrets: 
