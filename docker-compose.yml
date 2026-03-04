@@ -44,7 +44,7 @@ services:
 
     db.openelis.org:
         container_name: openelisglobal-database 
-        image: itechuw/openelis-global-2-database:3.2.1.2
+        image: itechuw/openelis-global-2-database:develop
         platform: linux/amd64
         ports:
             - "15432:5432"
@@ -110,7 +110,7 @@ services:
             
     fhir.openelis.org:
         container_name: external-fhir-api
-        image: itechuw/openelis-global-2-fhir:3.2.1.2
+        image: itechuw/openelis-global-2-fhir:develop
         platform: linux/amd64
         ports:
             - "8081:8080"
@@ -154,7 +154,7 @@ services:
         tty: true
 
     proxy:
-        image: itechuw/openelis-global-2-proxy:3.2.1.2
+        image: itechuw/openelis-global-2-proxy:develop
         container_name: openelisglobal-proxy
         platform: linux/amd64
         ports:
@@ -188,25 +188,25 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock   
 
-    openelis-analyzer-bridge:
-        image: itechuw/openelis-analyzer-bridge:develop
-        platform: linux/amd64
-        ports:
-            - "8442:8443" # HTTPS API port
-            - "12000:12001" # ASTM listen port
-        volumes:
-            - ./configs/astm/configuration.yml:/app/configuration.yml:ro
-            -  key_trust-store-volume:/etc/openelis-global
-        environment:
-            SPRING_PROFILE: dev
-            LOGGING_LEVEL_ORG_ITECH: TRACE
-            JAVA_OPTS: | 
-                -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} 
-                -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD}
-                -Djavax.net.ssl.trustStoreType=pkcs12
-        networks:
-            - openelis-network    
-        restart: unless-stopped                 
+    # openelis-analyzer-bridge:
+    #     image: itechuw/openelis-analyzer-bridge:develop
+    #     platform: linux/amd64
+    #     ports:
+    #         - "8442:8443" # HTTPS API port
+    #         - "12000:12001" # ASTM listen port
+    #     volumes:
+    #         - ./configs/astm/configuration.yml:/app/configuration.yml:ro
+    #         -  key_trust-store-volume:/etc/openelis-global
+    #     environment:
+    #         SPRING_PROFILE: dev
+    #         LOGGING_LEVEL_ORG_ITECH: TRACE
+    #         JAVA_OPTS: | 
+    #             -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} 
+    #             -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD}
+    #             -Djavax.net.ssl.trustStoreType=pkcs12
+    #     networks:
+    #         - openelis-network    
+    #     restart: unless-stopped                 
             
 secrets: 
   common.properties:
