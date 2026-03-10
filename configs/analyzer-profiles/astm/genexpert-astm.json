@@ -9,7 +9,7 @@
   "manufacturer": "Cepheid",
   "category": "MOLECULAR",
   "protocol": { "name": "ASTM", "version": "E-1394-97" },
-  "identifier_pattern": ".*GeneExpert.*",
+  "identifier_pattern": ".*GeneXpert.*",
   "transport": ["RS-232", "TCP/IP"],
   "transport_config": {
     "RS-232": { "default_baud_rate": 9600 },
