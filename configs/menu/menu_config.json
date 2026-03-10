@@ -46,6 +46,23 @@
         }
       ]
     },
+     {
+      "elementId": "menu_analyzers",
+      "childMenus": [
+        {
+          "elementId": "menu_analyzers_list",
+          "childMenus": []
+        },
+        {
+          "elementId": "menu_analyzers_errors",
+          "childMenus": []
+        },
+        {
+          "elementId": "menu_analyzers_types",
+          "childMenus": []
+        }
+      ]
+    },
     {
       "elementId": "menu_nonconformity",
       "childMenus": [
@@ -117,16 +134,7 @@
         },
         {
           "elementId": "menu_results_analyzer",
-          "childMenus": [
-            {
-              "elementId": "PocH100iAnalyzer_plugin",
-              "childMenus": []
-            },
-            {
-              "elementId": "GeneXpertAnalyzer_plugin",
-              "childMenus": []
-            }
-          ]
+          "childMenus": ["*"]
         }
       ]
     },
