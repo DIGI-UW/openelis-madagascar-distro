@@ -5,9 +5,9 @@
 org:
   itech:
     ahb:
-      # forward-astm-server:
-      #   hostName: astm-http-bridge2
-      #   port: 12001
+      forward-astm-server:
+        hostName: openelis-analyzer-bridge
+        port: 12001
       forward-http-server:
         uri: https://oe.openelis.org:8443/api/OpenELIS-Global/analyzer/astm
         username: admin

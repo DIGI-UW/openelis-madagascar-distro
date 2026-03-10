@@ -206,7 +206,27 @@ services:
                 -Djavax.net.ssl.trustStoreType=pkcs12
         networks:
             - openelis-network    
-        restart: unless-stopped                 
+        restart: unless-stopped    
+
+    openelis-analyzer-bridge2:
+        image: itechuw/openelis-analyzer-bridge:develop
+        platform: linux/amd64
+        ports:
+            - "8445:8443" # HTTPS API port
+            # - "12000:12001" # ASTM listen port
+        volumes:
+            - ./configs/astm/configuration.yml:/app/configuration.yml:ro
+            -  key_trust-store-volume:/etc/openelis-global
+        environment:
+            SPRING_PROFILE: dev
+            LOGGING_LEVEL_ORG_ITECH: TRACE
+            JAVA_OPTS: | 
+                -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} 
+                -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD}
+                -Djavax.net.ssl.trustStoreType=pkcs12
+        networks:
+            - openelis-network    
+        restart: unless-stopped                   
             
 secrets: 
   common.properties:
