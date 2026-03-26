@@ -25,4 +25,6 @@ configs/database/data/
 **/*checksum*.properties
 **/*checksums*.properties
 configs/logs/*
+configs/properties/TotalSystemConfiguration.properties
+configs/properties/ChangedSystemConfiguration.properties
 
