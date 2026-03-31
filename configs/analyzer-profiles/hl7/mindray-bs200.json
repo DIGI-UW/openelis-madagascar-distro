@@ -1,18 +1,23 @@
 {
   "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
   "profileMeta": {
-    "id": "mindray-bs360e",
-    "version": "1.2.0",
-    "displayName": "Mindray BS-360E"
+    "id": "mindray-bs200",
+    "version": "1.0.0",
+    "displayName": "Mindray BS-200"
   },
-  "analyzer_name": "Mindray BS-360E",
+  "analyzer_name": "Mindray BS-200",
   "manufacturer": "Mindray",
   "category": "CHEMISTRY",
   "protocol": { "name": "HL7", "version": "2.3.1" },
-  "identifier_pattern": "MINDRAY.*BS.?360E|BS.?360E",
+  "identifier_pattern": "MINDRAY.*BS.?200|BS200",
   "transport": ["TCP/IP"],
   "transport_config": {
     "TCP/IP": { "default_port": 6001, "framing": "MLLP" }
+  },
+  "communication": {
+    "mode": "ANALYZER_INITIATED",
+    "supports_lis_initiated": true,
+    "notes": "HL7 push (ORU^R01) via MLLP. Bidirectional QRY^Q02/DSR^Q03 documented in vendor manual but not yet implemented in OE (OGC-326)."
   },
   "msh3_pattern": "MINDRAY",
   "default_test_mappings": [
@@ -66,5 +71,5 @@
     }
   ],
   "configDefaults": {},
-  "notes": "DUAL PROTOCOL SUPPORT: Per Mindray LIS Interface Manual, BS-360E supports BOTH HL7 v2.3.1 AND ASTM E1381-95. This default config uses HL7 mode. For ASTM mode, use astm/mindray-bs360e.json. Requires MLLP framing for HL7 mode. Seed matcher assumes dynamic sender identity from MSH-3/MSH-4 candidates. Real HL7 captures are still pending."
+  "notes": "Semi-automatic chemistry analyzer. Same HL7 v2.3.1 interface as BS-360E. Requires MLLP framing. MSH-3 typically identifies the manufacturer (e.g. 'MINDRAY' per msh3_pattern); exact sender value must be confirmed per deployment."
 }
