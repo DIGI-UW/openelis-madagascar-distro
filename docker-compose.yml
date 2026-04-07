@@ -56,7 +56,7 @@ services:
             - DB_SUPERUSER_PASSWORD=${ADMIN_PASSWORD}   
         volumes:
               # preserves the database between containers
-            - ./configs/database/data:/var/lib/postgresql/data                
+            - ./configs/database/data2:/var/lib/postgresql/data                
 
         logging: *local-logging    
         networks:
@@ -74,6 +74,7 @@ services:
         depends_on:
             - db.openelis.org
             - certs
+            - openelis-analyzer-bridge
         ports:
             - "8080:8080"
             - "8443:8443"
@@ -92,6 +93,8 @@ services:
             - SSL_KEYSTORE_PASSWORD
             - SSL_TRUSTSTORE_PATH
             - SSL_TRUSTSTORE_PASSWORD
+            # Bridge HTTPS API (same Docker network). OE pushes analyzer bindings here at startup.
+            - ANALYZER_BRIDGE_URL=https://bridge.openelis.org:8443
         volumes:
             -  key_trust-store-volume:/etc/openelis-global
             -  lucene_index-vol:/var/lib/lucene_index
@@ -105,6 +108,8 @@ services:
             - ./configs/configuration:/var/lib/openelis-global/configuration
             - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
             - ./configs/analyzer-profiles:/data/analyzer-profiles:ro
+            # Local path works without NFS; production can override via override file to bind /mnt/la2m/...
+            - analyzer-imports:/data/analyzer-imports
         secrets:
             - source: common.properties
             
@@ -189,23 +194,37 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock   
 
     openelis-analyzer-bridge:
-        image: itechuw/openelis-analyzer-bridge:3.0.0
+        container_name: openelis-analyzer-bridge
+        image: itechuw/openelis-analyzer-bridge:develop
         platform: linux/amd64
+        depends_on:
+            certs:
+                condition: service_completed_successfully
         ports:
             - "8442:8443" # HTTPS API port
             - "12000:12001" # ASTM listen port
         volumes:
             - ./configs/astm/configuration.yml:/app/configuration.yml:ro
             -  key_trust-store-volume:/etc/openelis-global
+            - analyzer-imports:/data/analyzer-imports
         environment:
-            SPRING_PROFILE: dev
+            SPRING_PROFILES_ACTIVE: dev
+            BRIDGE_FILE_ENABLED: "true"
             LOGGING_LEVEL_ORG_ITECH: TRACE
+            # Align with CI harness: HttpForwardingRouter appends /astm, /hl7, /csv
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: admin
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: adminADMIN!
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_INSECURE_TLS: "true"
+            JDK_JAVA_OPTIONS: -Djdk.internal.httpclient.disableHostnameVerification=true
             JAVA_OPTS: | 
                 -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} 
                 -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD}
                 -Djavax.net.ssl.trustStoreType=pkcs12
         networks:
-            - openelis-network    
+            openelis-network:
+                aliases:
+                    - bridge.openelis.org
         restart: unless-stopped                 
             
 secrets: 
@@ -226,3 +245,4 @@ volumes:
   certs-vol:
   keys-vol:
   lucene_index-vol:
+  analyzer-imports:
