@@ -1,4 +1,8 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect, Locator, Page, type TestInfo } from "@playwright/test";
+import {
+  attachScreenshot,
+  debugLog,
+} from "./debug-instrumentation";
 import { LONG_TIMEOUT, SHORT_TIMEOUT, UI_TIMEOUT } from "./timeouts";
 
 /**
@@ -70,7 +74,7 @@ export function locatorForAccessionNumber(
   return page.getByText(accessionTextRegExp(accession)).first();
 }
 
-type NavigateUntilVisibleOptions = {
+export type NavigateUntilVisibleOptions = {
   timeoutMs?: number;
   perAttemptTimeoutMs?: number;
   /** Optional API URL to poll before navigating. When provided, the helper
@@ -83,6 +87,99 @@ type NavigateUntilVisibleOptions = {
   apiPollMatch?: string | string[];
 };
 
+/** AccessionResults navigation + optional Playwright report attachments. */
+export type OpenAccessionResultsOptions = NavigateUntilVisibleOptions & {
+  /**
+   * When set, full-page failure screenshots attach to the HTML report
+   * before `finally`/teardown can navigate away (diagnosis stays unambiguous).
+   */
+  testInfo?: TestInfo;
+};
+
+/**
+ * Full-page screenshot + NDJSON diagnostics when AccessionResults (or same URL)
+ * does not show the expected accession. Safe to call from catch blocks.
+ */
+export async function captureAccessionPageFailureArtifacts(
+  page: Page,
+  testInfo: TestInfo | undefined,
+  expectedLabel: string,
+  hypothesisId: string,
+  location: string,
+  reason: string,
+): Promise<void> {
+  const screenshot = await page.screenshot({ fullPage: true }).catch(() => null);
+  const safe = expectedLabel.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 40);
+  if (screenshot) {
+    await attachScreenshot(
+      testInfo,
+      `accession-verify-${hypothesisId}-${safe}.png`,
+      screenshot,
+    );
+  }
+  const bodyText = ((await page.locator("body").textContent()) || "").replace(
+    /\s+/g,
+    " ",
+  );
+  const alphanum = convertAlphaNumLabNumForDisplay(expectedLabel);
+  const title = await page.title().catch(() => "");
+  const h1 = await page.locator("h1").first().textContent().catch(() => "");
+  const accessionInputValue = await page
+    .locator('input[name="accessionNumber"], #searchAccessionID')
+    .first()
+    .inputValue()
+    .catch(() => "");
+  const sampleInfoPreview = await page
+    .locator('[data-testid="LabNo"], .sampleInfo')
+    .allTextContents()
+    .then((items) =>
+      items
+        .map((t) => t.replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+        .slice(0, 6),
+    )
+    .catch(() => []);
+  let locatorMatchCount = 0;
+  try {
+    locatorMatchCount = await page
+      .getByText(accessionTextRegExp(expectedLabel))
+      .count();
+  } catch {
+    locatorMatchCount = -1;
+  }
+  const noResultsBanner = await page
+    .getByText(/no sample found|no tests with pending/i)
+    .first()
+    .isVisible()
+    .catch(() => false);
+
+  debugLog({
+    phase: "accession-verify",
+    hypothesisId,
+    location,
+    message: reason,
+    runId: "accession-verify",
+    data: {
+      url: page.url(),
+      expectedAccession: expectedLabel,
+      expectedDisplayVariants: Array.from(
+        new Set([expectedLabel.trim(), alphanum].filter(Boolean)),
+      ),
+      bodyHasRawAccession: bodyText.includes(expectedLabel.trim()),
+      bodyHasAlphanumVariant: bodyText.includes(alphanum),
+      locatorMatchCount,
+      pageTitle: title,
+      h1First: (h1 || "").trim().slice(0, 240),
+      accessionSearchInputValue: accessionInputValue,
+      noResultsBannerVisible: noResultsBanner,
+      sampleInfoPreview,
+      screenshotBytes: screenshot ? screenshot.length : 0,
+      screenshotAttachedToReport: Boolean(screenshot && testInfo),
+      bodySnippet: bodyText.slice(0, 600),
+    },
+  });
+}
+
 async function navigateUntilVisible(
   page: Page,
   url: string,
@@ -91,6 +188,7 @@ async function navigateUntilVisible(
 ) {
   const timeoutMs = options?.timeoutMs ?? LONG_TIMEOUT;
   const perAttemptTimeoutMs = options?.perAttemptTimeoutMs ?? UI_TIMEOUT;
+  let pollAttempt = 0;
 
   // When an API poll URL is provided, poll the REST API before navigating.
   // Uses page.request.get() but disposes each response immediately to avoid
@@ -102,52 +200,112 @@ async function navigateUntilVisible(
       : Array.isArray(options.apiPollMatch)
         ? options.apiPollMatch
         : [options.apiPollMatch];
+    let shouldFallbackToUiReload = false;
 
-    await expect
-      .poll(
-        async () => {
-          try {
-            const resp = await page.request.get(options.apiPollUrl!, {
-              timeout: SHORT_TIMEOUT,
-            });
-            let ok = false;
-            let data = null;
+    try {
+      await expect
+        .poll(
+          async () => {
+            pollAttempt += 1;
             try {
-              ok = resp.ok();
-              data = ok ? await resp.json() : null;
-            } finally {
-              await resp.dispose();
+              const resp = await page.request.get(options.apiPollUrl!, {
+                timeout: SHORT_TIMEOUT,
+              });
+              let ok = false;
+              let data = null;
+              let text = "";
+              try {
+                ok = resp.ok();
+                text = await resp.text();
+                data = ok && text ? JSON.parse(text) : null;
+              } finally {
+                await resp.dispose();
+              }
+              if (pollAttempt <= 3) {
+                // #region agent log
+                debugLog({
+                  phase: "results-poll",
+                  hypothesisId: "R1",
+                  location: "helpers/results-ui.ts:api-poll",
+                  message: "AnalyzerResults REST poll sample (first 3 attempts)",
+                  runId: "results-poll",
+                  data: {
+                    attempt: pollAttempt,
+                    apiPollUrl: options.apiPollUrl,
+                    ok,
+                    keys:
+                      data && typeof data === "object"
+                        ? Object.keys(data as Record<string, unknown>)
+                        : [],
+                    resultListLength: Array.isArray(data?.resultList)
+                      ? data.resultList.length
+                      : -1,
+                    bodySnippet: text.slice(0, 220),
+                  },
+                });
+                // #endregion
+              }
+              if (
+                data &&
+                !Array.isArray(data?.resultList) &&
+                data?.formName === "AnalyzerResultsForm"
+              ) {
+                shouldFallbackToUiReload = true;
+                return true;
+              }
+              if (!ok || !data) return false;
+              const results = data?.resultList ?? [];
+              if (results.length === 0) return false;
+              if (matchList.length === 0) return true;
+              const accessions = results.map(
+                (r: { accessionNumber?: string }) => r.accessionNumber ?? "",
+              );
+              return matchList.every((m) =>
+                accessions.some((a: string) => a.includes(m)),
+              );
+            } catch {
+              return false;
             }
-            if (!ok || !data) return false;
-            const results = data?.resultList ?? [];
-            if (results.length === 0) return false;
-            if (matchList.length === 0) return true;
-            const accessions = results.map(
-              (r: { accessionNumber?: string }) => r.accessionNumber ?? "",
-            );
-            return matchList.every((m) =>
-              accessions.some((a: string) => a.includes(m)),
-            );
-          } catch {
-            return false;
-          }
-        },
-        {
-          message: `Waiting for results matching "${options?.apiPollMatch}" at ${options.apiPollUrl}`,
-          timeout: timeoutMs,
-          intervals: [2_000],
-        },
-      )
-      .toBeTruthy();
+          },
+          {
+            message: `Waiting for results matching "${options?.apiPollMatch}" at ${options.apiPollUrl}`,
+            timeout: timeoutMs,
+            intervals: [2_000],
+          },
+        )
+        .toBeTruthy();
+    } catch (error) {
+      if (!shouldFallbackToUiReload) {
+        throw error;
+      }
+    }
 
-    await page.goto(url, {
-      waitUntil: "domcontentloaded",
-      timeout: perAttemptTimeoutMs,
-    });
-    await expect(visibleLocator()).toBeVisible({
-      timeout: perAttemptTimeoutMs,
-    });
-    return;
+    if (shouldFallbackToUiReload) {
+      // #region agent log
+      debugLog({
+        phase: "results-poll",
+        hypothesisId: "R2",
+        location: "helpers/results-ui.ts:api-poll-fallback",
+        message: "API returned form metadata — falling back to UI reload loop",
+        runId: "results-poll",
+        data: {
+          apiPollUrl: options.apiPollUrl,
+          attempts: pollAttempt,
+        },
+      });
+      // #endregion
+    } else {
+      await page.goto(url, {
+        waitUntil: "domcontentloaded",
+        timeout: perAttemptTimeoutMs,
+      });
+      await expect(visibleLocator()).toBeVisible({
+        timeout: perAttemptTimeoutMs,
+      });
+      return;
+    }
+
+    // Fall through to the generic UI reload loop below.
   }
 
   // Fallback: reload loop for pages without a known API endpoint.
@@ -258,7 +416,7 @@ export async function openAccessionResultsAndWaitForText(
   page: Page,
   accessionNumber: string,
   visibleText = accessionNumber,
-  options?: NavigateUntilVisibleOptions,
+  options?: OpenAccessionResultsOptions,
 ) {
   // AccessionResults is called after results are saved — data already exists
   // in the DB. Navigate once with a generous assertion timeout instead of the
@@ -270,7 +428,21 @@ export async function openAccessionResultsAndWaitForText(
     waitUntil: "domcontentloaded",
     timeout: navTimeout,
   });
-  await expect(locatorForAccessionNumber(page, visibleText)).toBeVisible({
-    timeout: visibilityTimeout,
-  });
+  try {
+    await expect(locatorForAccessionNumber(page, visibleText)).toBeVisible({
+      timeout: visibilityTimeout,
+    });
+  } catch (error) {
+    // #region agent log
+    await captureAccessionPageFailureArtifacts(
+      page,
+      options?.testInfo,
+      visibleText,
+      "R3",
+      "helpers/results-ui.ts:openAccessionResultsAndWaitForText",
+      "Accession text not visible on AccessionResults page",
+    );
+    // #endregion
+    throw error;
+  }
 }

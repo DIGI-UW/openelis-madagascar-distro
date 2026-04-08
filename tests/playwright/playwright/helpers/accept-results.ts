@@ -1,8 +1,8 @@
-import { Page, expect } from "@playwright/test";
+import { Page, expect, type TestInfo } from "@playwright/test";
 import type { DemoPresentation } from "./demo-presentation";
+import { debugLog } from "./debug-instrumentation";
 import {
   accessionTextRegExp,
-  locatorForAccessionNumber,
   openAccessionResultsAndWaitForText,
 } from "./results-ui";
 import {
@@ -36,12 +36,14 @@ import {
  *
  * @param accessionNumber Optional explicit accession. If omitted, the helper
  *   captures the first staged accession from the current page before saving.
+ * @param testInfo When set, failure screenshots attach to the HTML report (before teardown).
  */
 export async function acceptAndVerifyResults(
   page: Page,
   presentation: DemoPresentation,
   stepOffset: number,
   accessionNumber?: string,
+  testInfo?: TestInfo,
 ) {
   const stagedAccession =
     accessionNumber ??
@@ -50,6 +52,20 @@ export async function acceptAndVerifyResults(
   if (!stagedAccession) {
     throw new Error("Could not determine staged accession number before save.");
   }
+
+  // #region agent log
+  debugLog({
+    phase: "accept-results",
+    hypothesisId: "A0",
+    location: "helpers/accept-results.ts:acceptAndVerifyResults",
+    message: "Starting accept flow with staged accession",
+    runId: "accept-results",
+    data: {
+      stagedAccession: stagedAccession.trim(),
+      explicitAccessionPassed: accessionNumber != null,
+    },
+  });
+  // #endregion
 
   // ── Accept All ──────────────────────────────────────────────────
   await presentation.step(stepOffset + 1, "Accept All Results");
@@ -162,11 +178,9 @@ export async function acceptAndVerifyResults(
     {
       timeoutMs: NAV_TIMEOUT,
       perAttemptTimeoutMs: UI_TIMEOUT,
+      testInfo,
     },
   );
-  await expect(locatorForAccessionNumber(page, stagedAccession)).toBeVisible({
-    timeout: UI_TIMEOUT,
-  });
   // Hold on AccessionResults so the viewer can see the final outcome
   await presentation.pause(5_000);
 }

@@ -24,9 +24,65 @@ const AUTH_FILE = "playwright/.auth/user.json";
  */
 setup("authenticate", async ({ page, request, context }, testInfo) => {
   testInfo.setTimeout(NAV_TIMEOUT);
+  const baseUrl = process.env.BASE_URL || "https://localhost";
+  let healthAttempts = 0;
 
   const username = process.env.TEST_USER;
   const password = process.env.TEST_PASS;
+  page.on("response", (resp) => {
+    const url = resp.url();
+    if (
+      url.includes("/api/OpenELIS-Global/session") ||
+      url.includes("/login")
+    ) {
+      // #region agent log
+      fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0246c3",
+        },
+        body: JSON.stringify({
+          sessionId: "0246c3",
+          runId: "auth-postfix",
+          hypothesisId: "A5",
+          location: "tests/auth.setup.ts:page-response",
+          message: "auth-related page response",
+          data: {
+            url,
+            status: resp.status(),
+            ok: resp.ok(),
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+    }
+  });
+
+  // #region agent log
+  fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "0246c3",
+    },
+    body: JSON.stringify({
+      sessionId: "0246c3",
+      runId: "auth-pre",
+      hypothesisId: "A1",
+      location: "tests/auth.setup.ts:entry",
+      message: "auth setup start",
+      data: {
+        baseUrl,
+        hasUser: !!username,
+        hasPass: !!password,
+        ci: !!process.env.CI,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 
   if (!username || !password) {
     throw new Error(
@@ -40,12 +96,58 @@ setup("authenticate", async ({ page, request, context }, testInfo) => {
   const healthCheckResult = await expect
     .poll(
       async () => {
+        healthAttempts += 1;
         try {
           const health = await request.get("/health", {
             timeout: SHORT_TIMEOUT,
           });
+          // #region agent log
+          fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "0246c3",
+            },
+            body: JSON.stringify({
+              sessionId: "0246c3",
+              runId: "auth-pre",
+              hypothesisId: "A2",
+              location: "tests/auth.setup.ts:health-poll",
+              message: "health poll response",
+              data: {
+                attempt: healthAttempts,
+                status: health.status(),
+                ok: health.ok(),
+                url: health.url(),
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
           return health.ok();
-        } catch {
+        } catch (error) {
+          // #region agent log
+          fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "0246c3",
+            },
+            body: JSON.stringify({
+              sessionId: "0246c3",
+              runId: "auth-pre",
+              hypothesisId: "A3",
+              location: "tests/auth.setup.ts:health-poll-catch",
+              message: "health poll exception",
+              data: {
+                attempt: healthAttempts,
+                error:
+                  error instanceof Error ? error.message.slice(0, 250) : "unknown",
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
           return false;
         }
       },
@@ -74,6 +176,27 @@ setup("authenticate", async ({ page, request, context }, testInfo) => {
     },
   );
   const loginData = await loginResponse.json().catch(() => null);
+  // #region agent log
+  fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "0246c3",
+    },
+    body: JSON.stringify({
+      sessionId: "0246c3",
+      runId: "auth-pre",
+      hypothesisId: "A4",
+      location: "tests/auth.setup.ts:login-response",
+      message: "login response received",
+      data: {
+        status: loginResponse.status(),
+        success: !!loginData?.success,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 
   if (loginResponse.status() !== 200 || !loginData?.success) {
     throw new Error(
@@ -134,6 +257,28 @@ setup("authenticate", async ({ page, request, context }, testInfo) => {
       sameSite: "Lax",
     },
   ]);
+  // #region agent log
+  fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "0246c3",
+    },
+    body: JSON.stringify({
+      sessionId: "0246c3",
+      runId: "auth-postfix",
+      hypothesisId: "A6",
+      location: "tests/auth.setup.ts:cookie-added",
+      message: "session cookie added to browser context",
+      data: {
+        host,
+        secure: true,
+        sameSite: "Lax",
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
 
   // ── Step 4: Verify authenticated state ────────────────────────
   // Navigate to the home page — lightest authenticated route.
@@ -142,12 +287,38 @@ setup("authenticate", async ({ page, request, context }, testInfo) => {
   // not.toHaveURL assertion would pass instantly before React hydrates.
   const sessionResponse = page.waitForResponse(
     (resp) => resp.url().includes("/api/OpenELIS-Global/session") && resp.ok(),
-    { timeout: LONG_TIMEOUT },
+    { timeout: NAV_TIMEOUT },
   );
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await sessionResponse;
+  try {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await sessionResponse;
+  } catch (error) {
+    // #region agent log
+    fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0246c3",
+      },
+      body: JSON.stringify({
+        sessionId: "0246c3",
+        runId: "auth-postfix",
+        hypothesisId: "A7",
+        location: "tests/auth.setup.ts:session-wait-failed",
+        message: "session bootstrap failed",
+        data: {
+          currentUrl: page.url(),
+          error:
+            error instanceof Error ? error.message.slice(0, 250) : "unknown",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    throw error;
+  }
   await expect(page).not.toHaveURL(/\/login(?:\?|$)/, {
-    timeout: LONG_TIMEOUT,
+    timeout: NAV_TIMEOUT,
   });
 
   // ── Step 5: Save session ──────────────────────────────────────

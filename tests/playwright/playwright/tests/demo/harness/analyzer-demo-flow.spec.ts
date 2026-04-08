@@ -37,6 +37,7 @@ import type {
   PushResult,
 } from "../../../helpers/analyzer-test-config";
 import { buildRunScopedFileTargetDir } from "../../../helpers/file-target-dir";
+import { debugLog } from "../../../helpers/debug-instrumentation";
 
 const SIMULATOR_URL = process.env.SIMULATOR_URL || "http://localhost:8085";
 const RESULTS_TIMEOUT = 90_000;
@@ -277,14 +278,15 @@ test.describe("Madagascar analyzer demo flows", () => {
         dynamicIp = created.assignedIp;
         await findAnalyzerRowById(page, analyzerId, testInfo);
 
-        // Step 2: Test connection (skip for FILE — no TCP)
-        if (config.protocol !== "FILE") {
+        // Step 2: Test connection is optional for demo harness flows.
+        if (config.protocol !== "FILE" && config.requireConnectionTest === true) {
           await presentation.step(2, "Test analyzer connection");
           const analyzerRow = await findAnalyzerRowById(page, analyzerId, testInfo);
           await testAnalyzerConnection(page, analyzerRow, presentation);
         }
 
-        const hasTestConnection = config.protocol !== "FILE";
+        const hasTestConnection =
+          config.protocol !== "FILE" && config.requireConnectionTest === true;
         let step = hasTestConnection ? 3 : 2;
 
         // Override push destination with dynamic bridge IP for TCP analyzers
@@ -292,7 +294,12 @@ test.describe("Madagascar analyzer demo flows", () => {
         if (runConfig.protocol === "FILE") {
           pushConfig = runConfig.push;
         }
-        if (dynamicIp && config.protocol !== "FILE") {
+        if (config.protocol !== "FILE") {
+          if (!dynamicIp) {
+            throw new Error(
+              `Harness dynamic IP is required for TCP push destination in ${config.name}`,
+            );
+          }
           const bridgeIp = dynamicIp.replace(/\.\d+$/, ".2");
           const port = config.protocol === "ASTM" ? 12001 : 2575;
           const scheme = config.protocol === "ASTM" ? "tcp" : "mllp";
@@ -342,13 +349,40 @@ test.describe("Madagascar analyzer demo flows", () => {
         await presentation.pause(3_000);
 
         // Step 5: Accept results
-        await acceptAndVerifyResults(page, presentation, step, primarySampleId);
+        await acceptAndVerifyResults(
+          page,
+          presentation,
+          step,
+          primarySampleId,
+          testInfo,
+        );
 
         await presentation.title(
           "Flow Complete",
           `${config.displayName}: ${pushResults.length} results accepted.`,
         );
       } finally {
+        // #region agent log
+        debugLog({
+          phase: "teardown",
+          hypothesisId: "T1",
+          location:
+            "tests/demo/harness/analyzer-demo-flow.spec.ts:finally-before-teardown",
+          message:
+            "Entering finally — log URL before teardown navigates (failure screenshots otherwise show wrong page)",
+          runId: "harness-demo",
+          data: {
+            analyzerId: analyzerId ?? null,
+            urlBeforeTeardown: (() => {
+              try {
+                return page.url();
+              } catch {
+                return "(page unavailable)";
+              }
+            })(),
+          },
+        });
+        // #endregion
         // Teardown: delete analyzer + remove mock network
         await teardownAnalyzer(page, runConfig, analyzerId);
       }

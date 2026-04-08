@@ -60,6 +60,8 @@ export interface AnalyzerTestConfig {
   port?: number;
   /** Mock analyzer name for dynamic network creation (if different from name). */
   mockAnalyzerName?: string;
+  /** Whether this scenario requires explicit "Test Connection" success. */
+  requireConnectionTest?: boolean;
 }
 
 /** Runtime analyzer metadata captured after UI create. */

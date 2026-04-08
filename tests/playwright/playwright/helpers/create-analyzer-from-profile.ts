@@ -23,10 +23,10 @@ import type { DemoPresentation } from "./demo-presentation";
 import type { AnalyzerTestConfig, CreatedAnalyzer } from "./analyzer-test-config";
 import { LONG_TIMEOUT } from "./timeouts";
 import { resolveDbContainer } from "./db-container";
+import { debugLog } from "./debug-instrumentation";
 
 const SIMULATOR_URL = process.env.SIMULATOR_URL || "http://localhost:8085";
 const ANALYZER_API_PATH = "/api/OpenELIS-Global/rest/analyzer/analyzers";
-const FILE_IMPORT_API_PATH = "/api/OpenELIS-Global/rest/analyzer/file-import/configurations";
 const API_READY_TIMEOUT_MS = 15_000;
 const API_RETRY_DELAY_MS = 500;
 
@@ -36,14 +36,6 @@ function getAnalyzerApiUrl(): string {
     "",
   );
   return `${baseUrl}${ANALYZER_API_PATH}`;
-}
-
-function getFileImportApiUrl(): string {
-  const baseUrl = (process.env.BASE_URL || "https://localhost").replace(
-    /\/$/,
-    "",
-  );
-  return `${baseUrl}${FILE_IMPORT_API_PATH}`;
 }
 
 /**
@@ -61,18 +53,70 @@ async function createMockNetwork(
     const response = await page.request.post(`${SIMULATOR_URL}/analyzers`, {
       data: { name: mockName, template, port },
     });
+    const status = response.status();
+    const textBody = await response.text().catch(() => "");
+    // #region agent log
+    fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0246c3",
+      },
+      body: JSON.stringify({
+        sessionId: "0246c3",
+        runId: "genexpert-connection-pre",
+        hypothesisId: "H6",
+        location: "helpers/create-analyzer-from-profile.ts:createMockNetwork-post",
+        message: "mock create response",
+        data: {
+          mockName,
+          status,
+          ok: response.ok(),
+          bodySnippet: textBody.slice(0, 300),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     if (response.ok()) {
-      const body = await response.json();
+      const body = JSON.parse(textBody) as { ip?: string };
       await response.dispose();
       return body.ip || null;
     }
-    const status = response.status();
     await response.dispose();
     // 409 = already exists, which is fine (idempotent)
     if (status === 409) {
       // Fetch existing
       const listResp = await page.request.get(`${SIMULATOR_URL}/analyzers`);
       const list = listResp.ok() ? await listResp.json() : null;
+      // #region agent log
+      fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0246c3",
+        },
+        body: JSON.stringify({
+          sessionId: "0246c3",
+          runId: "genexpert-connection-pre",
+          hypothesisId: "H7",
+          location:
+            "helpers/create-analyzer-from-profile.ts:createMockNetwork-list",
+          message: "mock list fallback response",
+          data: {
+            mockName,
+            listOk: listResp.ok(),
+            analyzerCount: Array.isArray(list?.analyzers)
+              ? list.analyzers.length
+              : -1,
+            analyzerShape: Array.isArray(list?.analyzers)
+              ? Object.keys(list.analyzers[0] || {})
+              : [],
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       await listResp.dispose();
       if (list) {
         const existing = list.analyzers?.find(
@@ -82,7 +126,91 @@ async function createMockNetwork(
       }
     }
     return null;
-  } catch {
+  } catch (error) {
+    // #region agent log
+    fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0246c3",
+      },
+      body: JSON.stringify({
+        sessionId: "0246c3",
+        runId: "genexpert-connection-pre",
+        hypothesisId: "H8",
+        location:
+          "helpers/create-analyzer-from-profile.ts:createMockNetwork-catch",
+        message: "mock create threw",
+        data: {
+          mockName,
+          error: error instanceof Error ? error.message.slice(0, 250) : "unknown",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    try {
+      const listResp = await page.request.get(`${SIMULATOR_URL}/analyzers`);
+      const list = listResp.ok() ? await listResp.json() : null;
+      // #region agent log
+      fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0246c3",
+        },
+        body: JSON.stringify({
+          sessionId: "0246c3",
+          runId: "genexpert-connection-pre",
+          hypothesisId: "H10",
+          location:
+            "helpers/create-analyzer-from-profile.ts:createMockNetwork-recover",
+          message: "mock create recovery list response",
+          data: {
+            mockName,
+            listOk: listResp.ok(),
+            analyzerCount: Array.isArray(list?.analyzers)
+              ? list.analyzers.length
+              : -1,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      await listResp.dispose();
+      if (Array.isArray(list?.analyzers)) {
+        const existing = list.analyzers.find(
+          (a: { name?: string; ip?: string }) => a?.name === mockName,
+        );
+        if (existing?.ip) {
+          // #region agent log
+          fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "0246c3",
+            },
+            body: JSON.stringify({
+              sessionId: "0246c3",
+              runId: "genexpert-connection-pre",
+              hypothesisId: "H11",
+              location:
+                "helpers/create-analyzer-from-profile.ts:createMockNetwork-recover",
+              message: "recovered mock ip after create failure",
+              data: {
+                mockName,
+                recoveredIp: existing.ip,
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
+          return existing.ip;
+        }
+      }
+    } catch {
+      // Best-effort recovery only
+    }
     return null;
   }
 }
@@ -203,9 +331,11 @@ async function captureCreatedAnalyzerId(
   throw new Error(`Could not determine analyzer ID for "${analyzerName}"`);
 }
 
-type FileImportConfigPayload = {
-  id?: string;
-  analyzerId: number;
+type AnalyzerFileConfigPayload = {
+  id: string;
+  name: string;
+  analyzerType?: string;
+  type?: string;
   importDirectory: string;
   archiveDirectory: string;
   errorDirectory: string;
@@ -214,8 +344,12 @@ type FileImportConfigPayload = {
   columnMappings: Record<string, string>;
   delimiter: string;
   hasHeader: boolean;
-  active: boolean;
+  skipRows: number;
 };
+
+async function getCsrfToken(page: Page): Promise<string | null> {
+  return page.evaluate(() => window.localStorage.getItem("CSRF"));
+}
 
 function buildFileImportDirectories(targetDir: string): {
   importDirectory: string;
@@ -248,37 +382,96 @@ async function updateFileImportDirectory(
     throw new Error(`Analyzer ID "${analyzerId}" is not numeric for FILE config`);
   }
 
-  const cfgBase = getFileImportApiUrl();
-  const existingResp = await page.request.get(
-    `${cfgBase}/analyzer/${analyzerIdInt}`,
-    { timeout: LONG_TIMEOUT },
-  );
+  const cfgBase = getAnalyzerApiUrl();
+  const existingResp = await page.request.get(`${cfgBase}/${analyzerIdInt}`, {
+    timeout: LONG_TIMEOUT,
+  });
 
   if (!existingResp.ok()) {
     const status = existingResp.status();
+    const bodySnippet = (await existingResp.text()).slice(0, 220);
+    // #region agent log
+    debugLog({
+      phase: "file-config",
+      hypothesisId: "F1",
+      location:
+        "helpers/create-analyzer-from-profile.ts:file-config-load-failed",
+      message: "GET analyzer for FILE path update failed",
+      runId: "file-config",
+      data: {
+        analyzerId: analyzerIdInt,
+        cfgBase,
+        status,
+        bodySnippet,
+      },
+    });
+    // #endregion
     await existingResp.dispose();
     throw new Error(
       `Failed to load FILE config for analyzer ${analyzerIdInt} (HTTP ${status})`,
     );
   }
 
-  const existing = (await existingResp.json()) as FileImportConfigPayload;
+  const existing = (await existingResp.json()) as Partial<AnalyzerFileConfigPayload>;
   await existingResp.dispose();
-  if (!existing.id) {
-    throw new Error(`Analyzer ${analyzerIdInt} FILE config does not include id`);
+  if (!existing.id || !existing.name) {
+    throw new Error(
+      `Analyzer ${analyzerIdInt} did not return enough data for FILE config update`,
+    );
   }
 
   const dirs = buildFileImportDirectories(targetDir);
-  const payload: FileImportConfigPayload = {
-    ...existing,
-    analyzerId: analyzerIdInt,
+  const payload: AnalyzerFileConfigPayload = {
+    id: existing.id,
+    name: existing.name,
+    analyzerType: existing.analyzerType || existing.type,
     importDirectory: dirs.importDirectory,
-    archiveDirectory: dirs.archiveDirectory,
-    errorDirectory: dirs.errorDirectory,
+    archiveDirectory: existing.archiveDirectory || dirs.archiveDirectory,
+    errorDirectory: existing.errorDirectory || dirs.errorDirectory,
+    filePattern: existing.filePattern || "*.csv",
+    fileFormat: existing.fileFormat || "CSV",
+    columnMappings: existing.columnMappings || {},
+    delimiter: existing.delimiter || ",",
+    hasHeader: existing.hasHeader ?? true,
+    skipRows: existing.skipRows ?? 0,
   };
 
+  // #region agent log
+  debugLog({
+    phase: "file-config",
+    hypothesisId: "F2",
+    location:
+      "helpers/create-analyzer-from-profile.ts:file-config-update-start",
+    message: "PUT analyzer payload (run-scoped import dir + FILE fields)",
+    runId: "file-config",
+    data: {
+      analyzerId: analyzerIdInt,
+      cfgBase,
+      importDirectory: payload.importDirectory,
+      archiveDirectory: payload.archiveDirectory,
+      errorDirectory: payload.errorDirectory,
+      filePattern: payload.filePattern,
+      fileFormat: payload.fileFormat,
+    },
+  });
+  // #endregion
+  const csrfToken = await getCsrfToken(page);
+  // #region agent log
+  debugLog({
+    phase: "file-config",
+    hypothesisId: "F4",
+    location: "helpers/create-analyzer-from-profile.ts:file-config-csrf",
+    message: "CSRF token present for authenticated PUT",
+    runId: "file-config",
+    data: {
+      analyzerId: analyzerIdInt,
+      hasCsrfToken: Boolean(csrfToken),
+    },
+  });
+  // #endregion
   const putResp = await page.request.put(`${cfgBase}/${existing.id}`, {
     data: payload,
+    headers: csrfToken ? { "X-CSRF-Token": csrfToken } : undefined,
     timeout: LONG_TIMEOUT,
   });
   if (!putResp.ok()) {
@@ -289,6 +482,22 @@ async function updateFileImportDirectory(
       `Failed to update FILE config directory for analyzer ${analyzerIdInt} (HTTP ${status}): ${body}`,
     );
   }
+  const putBodySnippet = (await putResp.text()).slice(0, 220);
+  // #region agent log
+  debugLog({
+    phase: "file-config",
+    hypothesisId: "F3",
+    location:
+      "helpers/create-analyzer-from-profile.ts:file-config-update-success",
+    message: "PUT analyzer succeeded (bridge will re-register watch dir)",
+    runId: "file-config",
+    data: {
+      analyzerId: analyzerIdInt,
+      status: putResp.status(),
+      bodySnippet: putBodySnippet,
+    },
+  });
+  // #endregion
   await putResp.dispose();
 }
 
@@ -322,6 +531,30 @@ export async function createAnalyzerFromProfile(
       template,
       port,
     );
+    // #region agent log
+    fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "0246c3",
+      },
+      body: JSON.stringify({
+        sessionId: "0246c3",
+        runId: "genexpert-connection-pre",
+        hypothesisId: "H5",
+        location: "helpers/create-analyzer-from-profile.ts:mock-network",
+        message: "mock network assigned",
+        data: {
+          analyzerName: config.name,
+          mockAnalyzerName: config.mockAnalyzerName,
+          assignedIp,
+          port,
+          protocol: config.protocol,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
 
     // Creating/attaching docker networks can briefly destabilize connectivity.
     await waitForAnalyzerApiReady(page);
@@ -353,13 +586,39 @@ export async function createAnalyzerFromProfile(
 
   // Fill IP and port for TCP analyzers
   if (config.protocol !== "FILE") {
-    const ip = assignedIp || config.ipAddress;
-    if (ip) {
-      await form.fillIpAddress(ip);
+    const harnessIp = assignedIp || null;
+    const harnessPort = config.port;
+    if (!harnessIp || !harnessPort) {
+      // #region agent log
+      fetch("http://localhost:7356/ingest/dd709e30-65ee-44b3-9fc7-0d27deb0de7e", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "0246c3",
+        },
+        body: JSON.stringify({
+          sessionId: "0246c3",
+          runId: "genexpert-connection-pre",
+          hypothesisId: "H9",
+          location: "helpers/create-analyzer-from-profile.ts:tcp-required-values",
+          message: "missing required harness TCP values",
+          data: {
+            analyzerName: config.name,
+            protocol: config.protocol,
+            harnessIp,
+            harnessPort: harnessPort ?? null,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      throw new Error(
+        `Harness TCP values are required for ${config.name}: ip=${harnessIp ?? "missing"}, port=${harnessPort ?? "missing"}`,
+      );
     }
-    if (config.port) {
-      await form.fillPort(String(config.port));
-    }
+
+    await form.fillIpAddress(harnessIp);
+    await form.fillPort(String(harnessPort));
     await presentation.pause(500);
   }
 
@@ -457,20 +716,31 @@ function hardDeleteAnalyzerFromDb(analyzerName: string, analyzerId?: string): vo
   const sql = analyzerId
     ? `DELETE FROM clinlims.analyzer_results WHERE analyzer_id = ${analyzerIdSqlLiteral(analyzerId)}; DELETE FROM clinlims.analyzer WHERE id = ${analyzerIdSqlLiteral(analyzerId)};`
     : `DELETE FROM clinlims.analyzer_results WHERE analyzer_id IN (SELECT id FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)}); DELETE FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)};`;
+  const dockerArgs = [
+    "exec",
+    "-i",
+    container,
+    "psql",
+    "-U",
+    "clinlims",
+    "-d",
+    "clinlims",
+    "-c",
+    sql,
+  ];
   try {
-    execFileSync("docker", [
-      "exec",
-      "-i",
-      container,
-      "psql",
-      "-U",
-      "clinlims",
-      "-d",
-      "clinlims",
-      "-c",
-      sql,
-    ]);
+    execFileSync("docker", dockerArgs);
   } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (/permission denied/i.test(message)) {
+      try {
+        execFileSync("sudo", ["docker", ...dockerArgs]);
+        return;
+      } catch (sudoError) {
+        console.warn(`DB cleanup failed for "${analyzerName}": ${sudoError}`);
+        return;
+      }
+    }
     console.warn(`DB cleanup failed for "${analyzerName}": ${e}`);
   }
 }

@@ -191,4 +191,9 @@ export class AnalyzerFormPage {
   async getPort(): Promise<string> {
     return (await this.portInput.inputValue()) || "";
   }
+
+  /** Get the current value of the IP input */
+  async getIpAddress(): Promise<string> {
+    return (await this.ipAddressInput.inputValue()) || "";
+  }
 }
