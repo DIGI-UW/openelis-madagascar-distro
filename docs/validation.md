@@ -69,11 +69,54 @@ Readiness checks:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
+curl -k -sSf https://localhost:8443/OpenELIS-Global/health
+curl -k -sSf -X POST 'https://localhost/api/OpenELIS-Global/ValidateLogin?apiCall=true' \
+  -d 'loginName=admin&password=adminADMIN!'
 curl -k -sSf https://localhost:8442/actuator/health
 curl -sSf http://localhost:8085/health
 ```
 
 The overlay adds **`itechuw/astm-mock-server:latest`** (published mock; same family as upstream `analyzer-mock-server`) and extra bridge ports/env for ASTM forward-to-mock and HL7/MLLP.
+
+## Reset to clean E2E state
+
+For this distro, "clean" does **not** normally mean deleting
+`configs/database/data2`.
+
+Preferred reset model:
+- restart or recreate the stack from the intended compose layers
+- verify OE, bridge, and mock health
+- reset and reload E2E test data using the upstream fixture scripts
+
+Recommended sequence:
+
+```bash
+# 1. Validate compose merge
+./scripts/validate-compose.sh
+
+# 2. Recreate the analyzer validation stack
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.validate.yml \
+  up -d
+
+# Add -f docker-compose.local-images.yml and --force-recreate when validating local builds.
+
+# 3. Verify readiness
+curl -k -sSf https://localhost:8443/OpenELIS-Global/health
+curl -k -sSf -X POST 'https://localhost/api/OpenELIS-Global/ValidateLogin?apiCall=true' \
+  -d 'loginName=admin&password=adminADMIN!'
+curl -k -sSf https://localhost:8442/actuator/health
+curl -sSf http://localhost:8085/health
+
+# 4. Reset and reload E2E fixtures from the upstream app repo
+cd /home/ubuntu/OpenELIS-Global-2
+./src/test/resources/load-test-fixtures.sh --reset --analyzers=full
+```
+
+For the detailed runbook and cautions, see:
+- [`docs/database-reset.md`](./database-reset.md)
+- [`AGENTS.md`](../AGENTS.md)
 
 ## Run the 10 Madagascar demo tests (local, dockerized)
 
@@ -95,7 +138,9 @@ Artifacts:
 - `test-results/playwright-report`
 - `test-results/test-output`
 
-No upstream checkout is required at runtime.
+No upstream checkout is required at runtime for the published-image validation
+path itself. If you want the upstream fixture reset/reload workflow, you do need
+the upstream checkout referenced above.
 
 ## ASTM read timeouts (~60s)
 
