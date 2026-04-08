@@ -11,6 +11,10 @@ if (fs.existsSync(localEnv)) {
   require("dotenv").config({ path: repoEnv });
 }
 
+// Same defaults as docker-compose.validate.yml `demo-tests` (TEST_USER/TEST_PASS).
+if (!process.env.TEST_USER) process.env.TEST_USER = "admin";
+if (!process.env.TEST_PASS) process.env.TEST_PASS = "adminADMIN!";
+
 /**
  * OpenELIS Global Playwright Configuration
  *
@@ -60,8 +64,11 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
 
-  // Reporting
-  reporter: process.env.CI ? "blob" : "html",
+  // Reporting: blob in CI; locally use HTML with open:never so failures do not
+  // start a blocking report server (Playwright default open:on-failure hangs the shell).
+  reporter: process.env.CI
+    ? "blob"
+    : [["html", { open: "never" as const }]],
 
   // Global settings
   use: {

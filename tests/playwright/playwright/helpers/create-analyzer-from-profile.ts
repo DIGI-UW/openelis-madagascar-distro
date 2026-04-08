@@ -716,13 +716,14 @@ function escapeRegExp(value: string): string {
 
 /**
  * Hard-delete analyzer rows after UI soft-delete (test isolation).
- * CASCADE FK on analyzer_test_map handles test mapping cleanup automatically.
+ * Clear analysis.analyzer_id first (fk_analysis_analyzer); then analyzer_results;
+ * analyzer_test_map CASCADE handles mappings when analyzer is removed.
  */
 function hardDeleteAnalyzerFromDb(analyzerName: string, analyzerId?: string): void {
   const container = resolveDbContainer();
   const sql = analyzerId
-    ? `DELETE FROM clinlims.analyzer_results WHERE analyzer_id = ${analyzerIdSqlLiteral(analyzerId)}; DELETE FROM clinlims.analyzer WHERE id = ${analyzerIdSqlLiteral(analyzerId)};`
-    : `DELETE FROM clinlims.analyzer_results WHERE analyzer_id IN (SELECT id FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)}); DELETE FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)};`;
+    ? `UPDATE clinlims.analysis SET analyzer_id = NULL WHERE analyzer_id = ${analyzerIdSqlLiteral(analyzerId)}; DELETE FROM clinlims.analyzer_results WHERE analyzer_id = ${analyzerIdSqlLiteral(analyzerId)}; DELETE FROM clinlims.analyzer WHERE id = ${analyzerIdSqlLiteral(analyzerId)};`
+    : `UPDATE clinlims.analysis SET analyzer_id = NULL WHERE analyzer_id IN (SELECT id FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)}); DELETE FROM clinlims.analyzer_results WHERE analyzer_id IN (SELECT id FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)}); DELETE FROM clinlims.analyzer WHERE name = ${escapePgStringLiteral(analyzerName)};`;
   const dockerArgs = [
     "exec",
     "-i",

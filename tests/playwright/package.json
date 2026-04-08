@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "test:harness-demo": "playwright test --project=harness-demo --config=playwright.config.ts",
-    "test:setup": "playwright test --project=setup --config=playwright.config.ts"
+    "test:setup": "playwright test --project=setup --config=playwright.config.ts",
+    "bundle:video-review": "node scripts/bundle-harness-video-review.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.49.1",
