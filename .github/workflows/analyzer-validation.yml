@@ -37,10 +37,13 @@ jobs:
       - name: Run focused analyzer subset
         run: |
           set -euo pipefail
+          # Image WORKDIR is /app (see tests/playwright/Dockerfile); do not use npm --prefix tests/playwright.
           COMPOSE_PROFILES=demo docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests \
-            npm --prefix tests/playwright run test:harness-demo -- \
+            npx playwright test \
+            --project=harness-demo \
+            --config=playwright.config.ts \
             --workers=1 \
-            --grep "GeneXpert ASTM|Mindray BC-5380|QuantStudio 7|Thermo Multiskan FC"
+            --grep 'GeneXpert ASTM|Mindray BC-5380|QuantStudio 7|Thermo Multiskan FC'
 
       - name: Collect service logs
         if: always()
@@ -57,8 +60,7 @@ jobs:
         with:
           name: analyzer-validation-artifacts
           path: |
-            tests/playwright/test-results
-            tests/playwright/playwright-report
+            test-results
             test-artifacts
           if-no-files-found: warn
 
