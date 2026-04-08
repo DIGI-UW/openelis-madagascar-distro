@@ -1,0 +1,39 @@
+version: "3.6"
+
+# Copy this file to docker-compose.local-images.yml and adjust only the paths/tags.
+# Keep machine-specific paths out of git by using an untracked local copy.
+#
+# Usage:
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.validate.yml \
+#     -f docker-compose.local-images.yml \
+#     up -d
+#
+# Optional local source builds:
+#   export OE_REPO_PATH=/home/ubuntu/OpenELIS-Global-2
+#   export BRIDGE_REPO_PATH=/home/ubuntu/openelis-analyzer-bridge
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.validate.yml \
+#     -f docker-compose.local-images.yml \
+#     build oe.openelis.org openelis-analyzer-bridge
+
+services:
+  # OpenELIS webapp image override for local testing.
+  oe.openelis.org:
+    image: itechuw/openelis-global-2:local
+    # Uncomment to build from local OpenELIS-Global-2 checkout.
+    # build:
+    #   context: ${OE_REPO_PATH}
+    #   dockerfile: Dockerfile
+    # platform: linux/amd64
+
+  # Optional bridge image override when validating bridge changes.
+  openelis-analyzer-bridge:
+    image: itechuw/openelis-analyzer-bridge:local
+    # Uncomment to build from local analyzer bridge checkout.
+    # build:
+    #   context: ${BRIDGE_REPO_PATH}
+    #   dockerfile: Dockerfile
+    # platform: linux/amd64

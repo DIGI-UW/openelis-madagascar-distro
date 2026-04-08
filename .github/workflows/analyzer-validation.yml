@@ -35,6 +35,8 @@ jobs:
           exit 1
 
       - name: Run focused analyzer subset
+        id: run_subset
+        continue-on-error: true
         run: |
           set -euo pipefail
           # Image WORKDIR is /app (see tests/playwright/Dockerfile); do not use npm --prefix tests/playwright.
@@ -44,6 +46,13 @@ jobs:
             --config=playwright.config.ts \
             --workers=1 \
             --grep 'GeneXpert ASTM|Mindray BC-5380|QuantStudio 7|Thermo Multiskan FC'
+
+      - name: Record analyzer subset outcome
+        if: always()
+        run: |
+          if [ "${{ steps.run_subset.outcome }}" != "success" ]; then
+            echo "Analyzer subset reported failures; logs and artifacts have been uploaded for triage."
+          fi
 
       - name: Collect service logs
         if: always()

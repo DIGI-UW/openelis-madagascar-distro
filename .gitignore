@@ -28,3 +28,7 @@ configs/logs/*
 configs/properties/TotalSystemConfiguration.properties
 configs/properties/ChangedSystemConfiguration.properties
 
+# local image override files (often contain machine-specific source paths)
+docker-compose.local-images.yml
+docker-compose.override.yml
+

@@ -12,6 +12,49 @@ The default stack uses floating tags (`itechuw/openelis-global-2:develop`, `itec
 1. **OE → bridge registration** — In webapp logs, expect `Bridge registration complete: N bindings pushed` with **N > 0** when analyzers exist and `ANALYZER_BRIDGE_URL` points at the bridge HTTPS URL (see `docker-compose.yml`).
 2. **`discovered-sources` 404** — If the bridge still logs `404` for `.../discovered-sources` after aligning `ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI` and `ANALYZER_BRIDGE_URL`, treat that as a **version skew** between the published `develop` webapp and bridge images (not a distro-only misconfiguration).
 
+## Local image builds (no merge wait)
+
+For local PR validation, build from source and point this distro stack at local tags:
+
+```bash
+cd /path/to/OpenELIS-Global-2
+DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t itechuw/openelis-global-2:local .
+```
+
+Optional bridge local build:
+
+```bash
+cd /path/to/openelis-analyzer-bridge
+DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t itechuw/openelis-analyzer-bridge:local .
+```
+
+Then use a local compose override copied from [`docker-compose.local-images.example.yml`](../docker-compose.local-images.example.yml):
+
+```bash
+cp docker-compose.local-images.example.yml docker-compose.local-images.yml
+```
+
+Bring up with base + validate + local images:
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.validate.yml \
+  -f docker-compose.local-images.yml \
+  up -d
+```
+
+Verify running image tags:
+
+```bash
+docker inspect openelisglobal-webapp --format '{{.Config.Image}}'
+docker inspect openelis-analyzer-bridge --format '{{.Config.Image}}'
+```
+
+Notes:
+- Keep `docker-compose.local-images.yml` local and untracked (`.gitignore`) because local source paths are machine-specific.
+- Prefer `:local`/`:pr-<id>` tags instead of `:develop` to avoid accidental overwrite when pulling published images.
+
 ## Validation overlay (mock + MLLP + demo tests)
 
 Bring up the stack with the image-based overlay:
