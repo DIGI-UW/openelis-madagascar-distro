@@ -54,7 +54,11 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # Bridge image defaults to non-root (astm). Mock drops FILE fixtures as root under
+  # root-owned 755 dirs; without matching write access the watcher cannot create .failed
+  # sidecars or archive — AccessDeniedException spam and FILE E2E flakes.
   openelis-analyzer-bridge:
+    user: "0:0"
     ports:
       - "2575:2575"
     environment:
@@ -71,9 +75,10 @@ services:
           "curl -k -s -f https://localhost:8443/actuator/health > /dev/null",
         ]
       interval: 15s
-      timeout: 5s
+      # /actuator/health can block ~30s when httpforward checks OE during webapp warmup.
+      timeout: 45s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   demo-tests:
     profiles:

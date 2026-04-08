@@ -1,5 +1,6 @@
 import { Locator, Page } from "@playwright/test";
 import { findAnalyzerRow, goToAnalyzerDashboard } from "./analyzer-dashboard";
+import { AnalyzerListPage } from "../fixtures/analyzer-list";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -30,6 +31,26 @@ export async function cleanupAnalyzerByName(page: Page, analyzerName: string) {
   } catch (e) {
     // Cleanup is best-effort — don't mask the actual test failure
     console.warn(`Cleanup failed for "${analyzerName}": ${e}`);
+  }
+}
+
+export async function cleanupAnalyzerById(page: Page, analyzerId: string) {
+  if (page.isClosed()) return;
+  try {
+    await goToAnalyzerDashboard(page);
+    const list = new AnalyzerListPage(page);
+    const row = list.getRow(analyzerId);
+    if ((await row.count()) === 0) {
+      return;
+    }
+    await list.openOverflowMenu(analyzerId);
+    await list.clickAction(analyzerId, "delete");
+    const confirmButton = page
+      .getByRole("button", { name: /delete|confirm/i })
+      .last();
+    await confirmButton.click();
+  } catch (e) {
+    console.warn(`Cleanup failed for analyzer ID "${analyzerId}": ${e}`);
   }
 }
 

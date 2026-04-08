@@ -186,6 +186,10 @@ export function analyzerResultsUrl(analyzerName: string): string {
   return `AnalyzerResults?type=${encodeURIComponent(analyzerName)}`;
 }
 
+export function analyzerResultsUrlById(analyzerId: string): string {
+  return `AnalyzerResults?id=${encodeURIComponent(analyzerId)}`;
+}
+
 export function accessionResultsUrl(accessionNumber: string): string {
   return `AccessionResults?accessionNumber=${encodeURIComponent(accessionNumber)}`;
 }
@@ -204,6 +208,24 @@ export async function openAnalyzerResultsAndWaitForText(
   await navigateUntilVisible(
     page,
     analyzerResultsUrl(analyzerName),
+    () => locatorForAccessionNumber(page, visibleText),
+    { ...options, apiPollUrl: apiUrl, apiPollMatch: pollMatch },
+  );
+}
+
+export async function openAnalyzerResultsByIdAndWaitForText(
+  page: Page,
+  analyzerId: string,
+  visibleText: string,
+  options?: NavigateUntilVisibleOptions & {
+    allExpectedAccessions?: string[];
+  },
+) {
+  const apiUrl = `/api/OpenELIS-Global/rest/AnalyzerResults?id=${encodeURIComponent(analyzerId)}`;
+  const pollMatch = options?.allExpectedAccessions ?? visibleText;
+  await navigateUntilVisible(
+    page,
+    analyzerResultsUrlById(analyzerId),
     () => locatorForAccessionNumber(page, visibleText),
     { ...options, apiPollUrl: apiUrl, apiPollMatch: pollMatch },
   );
@@ -241,12 +263,14 @@ export async function openAccessionResultsAndWaitForText(
   // AccessionResults is called after results are saved — data already exists
   // in the DB. Navigate once with a generous assertion timeout instead of the
   // reload loop, which wastes memory and can trigger OOM browser crashes on CI.
-  const timeout = options?.timeoutMs ?? LONG_TIMEOUT;
+  const navTimeout = options?.timeoutMs ?? LONG_TIMEOUT;
+  // Table/API hydration after domcontentloaded often exceeds NAV_TIMEOUT under docker load.
+  const visibilityTimeout = Math.max(navTimeout, 90_000);
   await page.goto(accessionResultsUrl(accessionNumber), {
     waitUntil: "domcontentloaded",
-    timeout,
+    timeout: navTimeout,
   });
   await expect(locatorForAccessionNumber(page, visibleText)).toBeVisible({
-    timeout,
+    timeout: visibilityTimeout,
   });
 }

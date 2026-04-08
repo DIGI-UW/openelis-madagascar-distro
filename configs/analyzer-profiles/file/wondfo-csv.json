@@ -16,13 +16,20 @@
   ],
   "column_mapping": {
     "Serial Number": "deviceSerialNumber",
+    "SerialNumber": "deviceSerialNumber",
     "Sample Number": "sampleId",
+    "SampleNumber": "sampleId",
+    "Sample ID": "sampleId",
     "Test Name": "testCode",
+    "TestName": "testCode",
     "Result": "result",
     "Unit": "unit",
     "Reference Range": "referenceRange",
+    "ReferenceRange": "referenceRange",
     "Date/Time": "dateTime",
+    "Date Time": "dateTime",
     "Reagent Lot": "reagentLot",
+    "ReagentLot": "reagentLot",
     "QC Status": "qcStatus"
   },
   "column_spec": {
@@ -62,7 +69,7 @@
   ],
   "configDefaults": {
     "fileFormat": "CSV",
-    "delimiter": ",",
+    "delimiter": ";",
     "hasHeader": true,
     "skipRows": 1
   },

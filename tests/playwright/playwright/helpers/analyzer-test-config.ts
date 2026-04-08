@@ -61,3 +61,9 @@ export interface AnalyzerTestConfig {
   /** Mock analyzer name for dynamic network creation (if different from name). */
   mockAnalyzerName?: string;
 }
+
+/** Runtime analyzer metadata captured after UI create. */
+export interface CreatedAnalyzer {
+  analyzerId: string;
+  assignedIp: string | null;
+}

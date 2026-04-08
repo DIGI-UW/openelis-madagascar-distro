@@ -1,0 +1,67 @@
+name: Analyzer Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  analyzer-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start validation stack
+        run: docker compose -f docker-compose.yml -f docker-compose.validate.yml up -d
+
+      - name: Wait for core services
+        run: |
+          set -euo pipefail
+          max_attempts=60
+          attempt=1
+          while [ "$attempt" -le "$max_attempts" ]; do
+            healthy_count="$(docker compose -f docker-compose.yml -f docker-compose.validate.yml ps --format json | jq -r 'select(.Health == "healthy") | .Service' | wc -l)"
+            if [ "$healthy_count" -ge 3 ]; then
+              echo "Core services are healthy"
+              exit 0
+            fi
+            echo "Waiting for services to become healthy ($attempt/$max_attempts)"
+            sleep 5
+            attempt=$((attempt + 1))
+          done
+          echo "Timed out waiting for healthy services"
+          docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
+          exit 1
+
+      - name: Run focused analyzer subset
+        run: |
+          set -euo pipefail
+          COMPOSE_PROFILES=demo docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests \
+            npm --prefix tests/playwright run test:harness-demo -- \
+            --workers=1 \
+            --grep "GeneXpert ASTM|Mindray BC-5380|QuantStudio 7|Thermo Multiskan FC"
+
+      - name: Collect service logs
+        if: always()
+        run: |
+          mkdir -p test-artifacts
+          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs openelisglobal-webapp > test-artifacts/openelisglobal-webapp.log || true
+          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs openelis-analyzer-bridge > test-artifacts/openelis-analyzer-bridge.log || true
+          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs analyzer-mock > test-artifacts/analyzer-mock.log || true
+          docker compose -f docker-compose.yml -f docker-compose.validate.yml ps > test-artifacts/compose-ps.txt || true
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyzer-validation-artifacts
+          path: |
+            tests/playwright/test-results
+            tests/playwright/playwright-report
+            test-artifacts
+          if-no-files-found: warn
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.validate.yml down -v

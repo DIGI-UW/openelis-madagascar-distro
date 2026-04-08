@@ -49,7 +49,8 @@ export async function pushAnalyzerResult(
 
   const json = await response.json();
   await response.dispose();
-  await presentation.pause(push.protocol === "FILE" ? 2_000 : 1_000);
+  // FILE: bridge file watcher + FHIR parse + forward to OE can exceed 2s under load.
+  await presentation.pause(push.protocol === "FILE" ? 12_000 : 1_000);
 
   // Normalize response into PushResult[] regardless of protocol
   if (json.metadata?.results) {

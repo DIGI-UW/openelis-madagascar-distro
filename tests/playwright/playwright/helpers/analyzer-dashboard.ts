@@ -1,6 +1,7 @@
 import { expect, Locator, Page, TestInfo } from "@playwright/test";
 import { LONG_TIMEOUT, UI_TIMEOUT } from "./timeouts";
 import { videoPause } from "./video-pause";
+import { AnalyzerListPage } from "../fixtures/analyzer-list";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -33,5 +34,19 @@ export async function findAnalyzerRow(
     hasText: new RegExp(escapeRegExp(name), "i"),
   });
   await expect(row.first()).toBeVisible({ timeout: UI_TIMEOUT });
+  return row;
+}
+
+export async function findAnalyzerRowById(
+  page: Page,
+  analyzerId: string,
+  testInfo?: TestInfo,
+): Promise<Locator> {
+  const list = new AnalyzerListPage(page);
+  const row = list.getRow(analyzerId);
+  await expect(row).toBeVisible({ timeout: UI_TIMEOUT });
+  if (testInfo) {
+    await videoPause(page, 1_000, testInfo);
+  }
   return row;
 }

@@ -17,8 +17,7 @@
 import { expect, test } from "../../../helpers/test-base";
 import { createDemoPresentation } from "../../../helpers/demo-presentation";
 import {
-  findAnalyzerRow,
-  goToAnalyzerDashboard,
+  findAnalyzerRowById,
 } from "../../../helpers/analyzer-dashboard";
 import {
   createAnalyzerFromProfile,
@@ -30,13 +29,14 @@ import { acceptAndVerifyResults } from "../../../helpers/accept-results";
 import {
   accessionTextRegExp,
   expectResultVisible,
-  openAnalyzerResultsAndWaitForText,
+  openAnalyzerResultsByIdAndWaitForText,
 } from "../../../helpers/results-ui";
 import { LONG_TIMEOUT, UI_TIMEOUT } from "../../../helpers/timeouts";
 import type {
   AnalyzerTestConfig,
   PushResult,
 } from "../../../helpers/analyzer-test-config";
+import { buildRunScopedFileTargetDir } from "../../../helpers/file-target-dir";
 
 const SIMULATOR_URL = process.env.SIMULATOR_URL || "http://localhost:8085";
 const RESULTS_TIMEOUT = 90_000;
@@ -205,7 +205,7 @@ const CONFIGS: AnalyzerTestConfig[] = [
 
 async function verifyResults(
   page: import("@playwright/test").Page,
-  config: AnalyzerTestConfig,
+  analyzerId: string,
   pushResults: PushResult[],
   primarySampleId: string,
   presentation: import("../../../helpers/demo-presentation").DemoPresentation,
@@ -214,7 +214,7 @@ async function verifyResults(
     .map((r) => r.sampleId || primarySampleId)
     .filter((v, i, a) => a.indexOf(v) === i);
 
-  await openAnalyzerResultsAndWaitForText(page, config.name, primarySampleId, {
+  await openAnalyzerResultsByIdAndWaitForText(page, analyzerId, primarySampleId, {
     timeoutMs: RESULTS_TIMEOUT,
     perAttemptTimeoutMs: LONG_TIMEOUT,
     allExpectedAccessions: allAccessions,
@@ -244,95 +244,114 @@ test.describe("Madagascar analyzer demo flows", () => {
   for (const config of CONFIGS) {
     test(`${config.displayName}: full E2E flow`, async ({ page }, testInfo) => {
       const presentation = createDemoPresentation(page, testInfo);
+      let analyzerId: string | undefined;
+      let dynamicIp: string | null = null;
+      const runConfig: AnalyzerTestConfig =
+        config.protocol === "FILE" && config.push.targetDir
+          ? {
+              ...config,
+              push: {
+                ...config.push,
+                targetDir: buildRunScopedFileTargetDir(config.push.targetDir),
+              },
+            }
+          : config;
 
-      await presentation.title(
-        config.displayName,
-        `${config.protocol} → Bridge → OpenELIS → Review → Accept`,
-      );
+      try {
+        await presentation.title(
+          config.displayName,
+          `${config.protocol} → Bridge → OpenELIS → Review → Accept`,
+        );
 
-      // Step 1: Create analyzer from profile via dashboard UI
-      await presentation.step(
-        1,
-        `Create ${config.name} from profile via dashboard`,
-      );
-      const dynamicIp = await createAnalyzerFromProfile(
-        page,
-        config,
-        presentation,
-      );
-      await findAnalyzerRow(page, config.name, testInfo);
+        // Step 1: Create analyzer from profile via dashboard UI
+        await presentation.step(
+          1,
+          `Create ${config.name} from profile via dashboard`,
+        );
+        const created = await createAnalyzerFromProfile(
+          page,
+          runConfig,
+          presentation,
+        );
+        analyzerId = created.analyzerId;
+        dynamicIp = created.assignedIp;
+        await findAnalyzerRowById(page, analyzerId, testInfo);
 
-      // Step 2: Test connection (skip for FILE — no TCP)
-      if (config.protocol !== "FILE") {
-        await presentation.step(2, "Test analyzer connection");
-        const analyzerRow = await findAnalyzerRow(page, config.name, testInfo);
-        await testAnalyzerConnection(page, analyzerRow, presentation);
+        // Step 2: Test connection (skip for FILE — no TCP)
+        if (config.protocol !== "FILE") {
+          await presentation.step(2, "Test analyzer connection");
+          const analyzerRow = await findAnalyzerRowById(page, analyzerId, testInfo);
+          await testAnalyzerConnection(page, analyzerRow, presentation);
+        }
+
+        const hasTestConnection = config.protocol !== "FILE";
+        let step = hasTestConnection ? 3 : 2;
+
+        // Override push destination with dynamic bridge IP for TCP analyzers
+        let pushConfig = config.push;
+        if (runConfig.protocol === "FILE") {
+          pushConfig = runConfig.push;
+        }
+        if (dynamicIp && config.protocol !== "FILE") {
+          const bridgeIp = dynamicIp.replace(/\.\d+$/, ".2");
+          const port = config.protocol === "ASTM" ? 12001 : 2575;
+          const scheme = config.protocol === "ASTM" ? "tcp" : "mllp";
+          pushConfig = {
+            ...pushConfig,
+            destination: `${scheme}://${bridgeIp}:${port}`,
+          };
+        }
+
+        // Step 3: Push result via mock server
+        await presentation.step(
+          step,
+          `Send ${config.protocol} result → Bridge → OpenELIS`,
+        );
+        const pushResults = await pushAnalyzerResult(
+          page,
+          pushConfig,
+          presentation,
+        );
+
+        expect(
+          pushResults.length,
+          `Mock should return at least 1 result for ${config.name}`,
+        ).toBeGreaterThan(0);
+
+        const primarySampleId = pushResults[0].sampleId;
+        expect(
+          primarySampleId,
+          `Mock should return a sampleId for ${config.name}`,
+        ).toBeTruthy();
+
+        // Step 4: Wait for results from bridge
+        step++;
+        await presentation.step(
+          step,
+          "Waiting for results from analyzer bridge...",
+        );
+        await verifyResults(
+          page,
+          analyzerId,
+          pushResults,
+          primarySampleId,
+          presentation,
+        );
+
+        await presentation.step(step, "Results staged — ready to accept");
+        await presentation.pause(3_000);
+
+        // Step 5: Accept results
+        await acceptAndVerifyResults(page, presentation, step, primarySampleId);
+
+        await presentation.title(
+          "Flow Complete",
+          `${config.displayName}: ${pushResults.length} results accepted.`,
+        );
+      } finally {
+        // Teardown: delete analyzer + remove mock network
+        await teardownAnalyzer(page, runConfig, analyzerId);
       }
-
-      const hasTestConnection = config.protocol !== "FILE";
-      let step = hasTestConnection ? 3 : 2;
-
-      // Override push destination with dynamic bridge IP for TCP analyzers
-      let pushConfig = config.push;
-      if (dynamicIp && config.protocol !== "FILE") {
-        const bridgeIp = dynamicIp.replace(/\.\d+$/, ".2");
-        const port = config.protocol === "ASTM" ? 12001 : 2575;
-        const scheme = config.protocol === "ASTM" ? "tcp" : "mllp";
-        pushConfig = {
-          ...pushConfig,
-          destination: `${scheme}://${bridgeIp}:${port}`,
-        };
-      }
-
-      // Step 3: Push result via mock server
-      await presentation.step(
-        step,
-        `Send ${config.protocol} result → Bridge → OpenELIS`,
-      );
-      const pushResults = await pushAnalyzerResult(
-        page,
-        pushConfig,
-        presentation,
-      );
-
-      expect(
-        pushResults.length,
-        `Mock should return at least 1 result for ${config.name}`,
-      ).toBeGreaterThan(0);
-
-      const primarySampleId = pushResults[0].sampleId;
-      expect(
-        primarySampleId,
-        `Mock should return a sampleId for ${config.name}`,
-      ).toBeTruthy();
-
-      // Step 4: Wait for results from bridge
-      step++;
-      await presentation.step(
-        step,
-        "Waiting for results from analyzer bridge...",
-      );
-      await verifyResults(
-        page,
-        config,
-        pushResults,
-        primarySampleId,
-        presentation,
-      );
-
-      await presentation.step(step, "Results staged — ready to accept");
-      await presentation.pause(3_000);
-
-      // Step 5: Accept results
-      await acceptAndVerifyResults(page, presentation, step, primarySampleId);
-
-      await presentation.title(
-        "Flow Complete",
-        `${config.displayName}: ${pushResults.length} results accepted.`,
-      );
-
-      // Teardown: delete analyzer + remove mock network
-      await teardownAnalyzer(page, config);
     });
   }
 });
