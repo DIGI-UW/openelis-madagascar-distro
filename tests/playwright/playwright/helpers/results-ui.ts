@@ -398,18 +398,40 @@ export async function expectResultVisible(
   resultsRegion: Locator,
   resultValue: string,
 ): Promise<void> {
-  const inputResult = resultsRegion
-    .locator(`input[value*="${resultValue}"]`)
-    .first();
-  try {
-    await expect(inputResult).toBeVisible({ timeout: SHORT_TIMEOUT });
-    return;
-  } catch {
-    // Input not found — try text match
+  for (const candidate of resultValueSearchVariants(resultValue)) {
+    const inputResult = resultsRegion
+      .locator(`input[value*="${candidate}"]`)
+      .first();
+    try {
+      await expect(inputResult).toBeVisible({ timeout: SHORT_TIMEOUT });
+      return;
+    } catch {
+      // Input not found for this variant — try text match
+    }
+    try {
+      await expect(
+        resultsRegion.getByText(candidate, { exact: false }).first(),
+      ).toBeVisible({ timeout: SHORT_TIMEOUT });
+      return;
+    } catch {
+      // Text not found for this variant — keep trying
+    }
   }
-  await expect(
-    resultsRegion.getByText(resultValue, { exact: false }).first(),
-  ).toBeVisible({ timeout: UI_TIMEOUT });
+  await expect(resultsRegion.getByText(resultValue, { exact: false }).first())
+    .toBeVisible({ timeout: UI_TIMEOUT });
+}
+
+export function resultValueSearchVariants(resultValue: string): string[] {
+  const trimmed = resultValue.trim();
+  const variants = new Set<string>([trimmed]);
+  const asNumber = Number(trimmed);
+  if (Number.isFinite(asNumber)) {
+    variants.add(String(asNumber));
+    if (Number.isInteger(asNumber)) {
+      variants.add(asNumber.toFixed(1));
+    }
+  }
+  return Array.from(variants);
 }
 
 export async function openAccessionResultsAndWaitForText(

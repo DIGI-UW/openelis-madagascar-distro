@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { buildRunScopedFileTargetDir } from "../../../helpers/file-target-dir";
 import { analyzerResultsUrlById } from "../../../helpers/results-ui";
+import { resultValueSearchVariants } from "../../../helpers/results-ui";
 
 test.describe("Harness helper invariants", () => {
   test("buildRunScopedFileTargetDir creates unique incoming directories", () => {
@@ -16,5 +17,14 @@ test.describe("Harness helper invariants", () => {
 
   test("analyzerResultsUrlById uses id query parameter", () => {
     expect(analyzerResultsUrlById("1234")).toBe("AnalyzerResults?id=1234");
+  });
+
+  test("resultValueSearchVariants handles numeric formatting differences", () => {
+    expect(resultValueSearchVariants("45200.0")).toEqual(
+      expect.arrayContaining(["45200.0", "45200"]),
+    );
+    expect(resultValueSearchVariants("45200")).toEqual(
+      expect.arrayContaining(["45200", "45200.0"]),
+    );
   });
 });

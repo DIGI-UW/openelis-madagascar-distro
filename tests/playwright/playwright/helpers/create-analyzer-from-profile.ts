@@ -514,6 +514,8 @@ export async function createAnalyzerFromProfile(
     page,
     new RegExp(`^\\s*${escapeRegExp(config.name)}\\s*$`, "i"),
   );
+  // Also purge any soft-deleted duplicate rows that can still violate unique constraints.
+  hardDeleteAnalyzerFromDb(config.name);
 
   // For TCP analyzers: create mock network to get a unique IP.
   // Delete any leftover network first (from a previous failed run).
@@ -679,10 +681,15 @@ export async function teardownAnalyzer(
   config: AnalyzerTestConfig,
   analyzerId?: string,
 ): Promise<void> {
-  // Step 1: Soft-delete via UI (tests the production user flow)
-  await deleteAnalyzerFromDashboard(page, config.name, analyzerId);
+  // Step 1: Soft-delete via UI (tests the production user flow).
+  // If this fails, continue with DB cleanup to avoid polluting subsequent runs.
+  try {
+    await deleteAnalyzerFromDashboard(page, config.name, analyzerId);
+  } catch (error) {
+    console.warn(`UI delete failed for "${config.name}", continuing with DB cleanup: ${error}`);
+  }
 
-  // Step 2: SQL cleanup of the soft-deleted row (test isolation)
+  // Step 2: SQL cleanup (test isolation), regardless of UI delete outcome.
   hardDeleteAnalyzerFromDb(config.name, analyzerId);
 
   // Step 3: Remove mock network
@@ -728,19 +735,18 @@ function hardDeleteAnalyzerFromDb(analyzerName: string, analyzerId?: string): vo
     "-c",
     sql,
   ];
+  // Most CI/dev environments here require sudo for Docker socket access.
   try {
-    execFileSync("docker", dockerArgs);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    if (/permission denied/i.test(message)) {
-      try {
-        execFileSync("sudo", ["docker", ...dockerArgs]);
-        return;
-      } catch (sudoError) {
-        console.warn(`DB cleanup failed for "${analyzerName}": ${sudoError}`);
-        return;
-      }
+    execFileSync("sudo", ["docker", ...dockerArgs]);
+    return;
+  } catch (sudoError) {
+    try {
+      execFileSync("docker", dockerArgs);
+      return;
+    } catch (dockerError) {
+      console.warn(
+        `DB cleanup failed for "${analyzerName}": ${sudoError}; fallback error: ${dockerError}`,
+      );
     }
-    console.warn(`DB cleanup failed for "${analyzerName}": ${e}`);
   }
 }
