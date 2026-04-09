@@ -279,14 +279,13 @@ test.describe("Madagascar analyzer demo flows", () => {
         await findAnalyzerRowById(page, analyzerId, testInfo);
 
         // Step 2: Test connection is optional for demo harness flows.
-        if (config.protocol !== "FILE" && config.requireConnectionTest === true) {
+        if (config.requireConnectionTest !== false) {
           await presentation.step(2, "Test analyzer connection");
           const analyzerRow = await findAnalyzerRowById(page, analyzerId, testInfo);
           await testAnalyzerConnection(page, analyzerRow, presentation);
         }
 
-        const hasTestConnection =
-          config.protocol !== "FILE" && config.requireConnectionTest === true;
+        const hasTestConnection = config.requireConnectionTest !== false;
         let step = hasTestConnection ? 3 : 2;
 
         // Override push destination with dynamic bridge IP for TCP analyzers
