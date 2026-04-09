@@ -34,8 +34,19 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
           exit 1
 
+      - name: API contract smoke tests
+        id: api_contract
+        run: |
+          set -euo pipefail
+          COMPOSE_PROFILES=demo docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests \
+            npx playwright test \
+            --project=harness-foundational \
+            --config=playwright.config.ts \
+            --workers=1
+
       - name: Run focused analyzer subset
         id: run_subset
+        if: steps.api_contract.outcome == 'success'
         continue-on-error: true
         run: |
           set -euo pipefail

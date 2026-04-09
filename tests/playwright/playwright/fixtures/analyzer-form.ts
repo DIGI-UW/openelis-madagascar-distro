@@ -21,7 +21,15 @@ export class AnalyzerFormPage {
   readonly portInput: Locator;
   readonly statusDropdown: Locator;
   readonly connectionFields: Locator;
-  readonly fileProtocolInfo: Locator;
+  // FILE protocol fields
+  readonly fileFormatDropdown: Locator;
+  readonly importDirectoryInput: Locator;
+  readonly filePatternInput: Locator;
+  readonly archiveDirectoryInput: Locator;
+  readonly errorDirectoryInput: Locator;
+  readonly columnMappingsInput: Locator;
+  readonly delimiterInput: Locator;
+  readonly hasHeaderCheckbox: Locator;
   readonly saveButton: Locator;
   readonly cancelButton: Locator;
   readonly notification: Locator;
@@ -56,8 +64,30 @@ export class AnalyzerFormPage {
     this.connectionFields = page.locator(
       '[data-testid="analyzer-form-connection-fields"]',
     );
-    this.fileProtocolInfo = page.locator(
-      '[data-testid="analyzer-form-file-protocol-info"]',
+    // FILE protocol fields
+    this.fileFormatDropdown = page.locator(
+      '[data-testid="analyzer-form-file-format-dropdown"]',
+    );
+    this.importDirectoryInput = page.locator(
+      '[data-testid="analyzer-form-import-directory-input"]',
+    );
+    this.filePatternInput = page.locator(
+      '[data-testid="analyzer-form-file-pattern-input"]',
+    );
+    this.archiveDirectoryInput = page.locator(
+      '[data-testid="analyzer-form-archive-directory-input"]',
+    );
+    this.errorDirectoryInput = page.locator(
+      '[data-testid="analyzer-form-error-directory-input"]',
+    );
+    this.columnMappingsInput = page.locator(
+      '[data-testid="analyzer-form-column-mappings-input"]',
+    );
+    this.delimiterInput = page.locator(
+      '[data-testid="analyzer-form-delimiter-input"]',
+    );
+    this.hasHeaderCheckbox = page.locator(
+      '[data-testid="analyzer-form-has-header-checkbox"]',
     );
     this.saveButton = page.locator('[data-testid="analyzer-form-save-button"]');
     this.cancelButton = page.locator(
@@ -195,5 +225,37 @@ export class AnalyzerFormPage {
   /** Get the current value of the IP input */
   async getIpAddress(): Promise<string> {
     return (await this.ipAddressInput.inputValue()) || "";
+  }
+
+  // ── FILE protocol helpers ─────────────────────────────────────
+
+  /** Fill the import directory field */
+  async fillImportDirectory(path: string) {
+    await this.importDirectoryInput.fill(path);
+  }
+
+  /** Fill the archive directory field */
+  async fillArchiveDirectory(path: string) {
+    await this.archiveDirectoryInput.fill(path);
+  }
+
+  /** Fill the error directory field */
+  async fillErrorDirectory(path: string) {
+    await this.errorDirectoryInput.fill(path);
+  }
+
+  /** Select a file format from the dropdown */
+  async selectFileFormat(format: string) {
+    await this.selectDropdownItem(this.fileFormatDropdown, format);
+  }
+
+  /** Fill the file pattern field */
+  async fillFilePattern(pattern: string) {
+    await this.filePatternInput.fill(pattern);
+  }
+
+  /** Get the current value of the import directory input */
+  async getImportDirectory(): Promise<string> {
+    return (await this.importDirectoryInput.inputValue()) || "";
   }
 }

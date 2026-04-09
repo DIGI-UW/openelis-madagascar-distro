@@ -331,26 +331,6 @@ async function captureCreatedAnalyzerId(
   throw new Error(`Could not determine analyzer ID for "${analyzerName}"`);
 }
 
-type AnalyzerFileConfigPayload = {
-  id: string;
-  name: string;
-  analyzerType?: string;
-  type?: string;
-  importDirectory: string;
-  archiveDirectory: string;
-  errorDirectory: string;
-  filePattern: string;
-  fileFormat: string;
-  columnMappings: Record<string, string>;
-  delimiter: string;
-  hasHeader: boolean;
-  skipRows: number;
-};
-
-async function getCsrfToken(page: Page): Promise<string | null> {
-  return page.evaluate(() => window.localStorage.getItem("CSRF"));
-}
-
 function buildFileImportDirectories(targetDir: string): {
   importDirectory: string;
   archiveDirectory: string;
@@ -370,135 +350,6 @@ function buildFileImportDirectories(targetDir: string): {
     archiveDirectory: `${normalized}/archive`,
     errorDirectory: `${normalized}/error`,
   };
-}
-
-async function updateFileImportDirectory(
-  page: Page,
-  analyzerId: string,
-  targetDir: string,
-): Promise<void> {
-  const analyzerIdInt = Number(analyzerId);
-  if (!Number.isFinite(analyzerIdInt)) {
-    throw new Error(`Analyzer ID "${analyzerId}" is not numeric for FILE config`);
-  }
-
-  const cfgBase = getAnalyzerApiUrl();
-  const existingResp = await page.request.get(`${cfgBase}/${analyzerIdInt}`, {
-    timeout: LONG_TIMEOUT,
-  });
-
-  if (!existingResp.ok()) {
-    const status = existingResp.status();
-    const bodySnippet = (await existingResp.text()).slice(0, 220);
-    // #region agent log
-    debugLog({
-      phase: "file-config",
-      hypothesisId: "F1",
-      location:
-        "helpers/create-analyzer-from-profile.ts:file-config-load-failed",
-      message: "GET analyzer for FILE path update failed",
-      runId: "file-config",
-      data: {
-        analyzerId: analyzerIdInt,
-        cfgBase,
-        status,
-        bodySnippet,
-      },
-    });
-    // #endregion
-    await existingResp.dispose();
-    throw new Error(
-      `Failed to load FILE config for analyzer ${analyzerIdInt} (HTTP ${status})`,
-    );
-  }
-
-  const existing = (await existingResp.json()) as Partial<AnalyzerFileConfigPayload>;
-  await existingResp.dispose();
-  if (!existing.id || !existing.name) {
-    throw new Error(
-      `Analyzer ${analyzerIdInt} did not return enough data for FILE config update`,
-    );
-  }
-
-  const dirs = buildFileImportDirectories(targetDir);
-  const payload: AnalyzerFileConfigPayload = {
-    id: existing.id,
-    name: existing.name,
-    analyzerType: existing.analyzerType || existing.type,
-    importDirectory: dirs.importDirectory,
-    archiveDirectory: existing.archiveDirectory || dirs.archiveDirectory,
-    errorDirectory: existing.errorDirectory || dirs.errorDirectory,
-    filePattern: existing.filePattern || "*.csv",
-    fileFormat: existing.fileFormat || "CSV",
-    columnMappings: existing.columnMappings || {},
-    delimiter: existing.delimiter || ",",
-    hasHeader: existing.hasHeader ?? true,
-    skipRows: existing.skipRows ?? 0,
-  };
-
-  // #region agent log
-  debugLog({
-    phase: "file-config",
-    hypothesisId: "F2",
-    location:
-      "helpers/create-analyzer-from-profile.ts:file-config-update-start",
-    message: "PUT analyzer payload (run-scoped import dir + FILE fields)",
-    runId: "file-config",
-    data: {
-      analyzerId: analyzerIdInt,
-      cfgBase,
-      importDirectory: payload.importDirectory,
-      archiveDirectory: payload.archiveDirectory,
-      errorDirectory: payload.errorDirectory,
-      filePattern: payload.filePattern,
-      fileFormat: payload.fileFormat,
-    },
-  });
-  // #endregion
-  const csrfToken = await getCsrfToken(page);
-  // #region agent log
-  debugLog({
-    phase: "file-config",
-    hypothesisId: "F4",
-    location: "helpers/create-analyzer-from-profile.ts:file-config-csrf",
-    message: "CSRF token present for authenticated PUT",
-    runId: "file-config",
-    data: {
-      analyzerId: analyzerIdInt,
-      hasCsrfToken: Boolean(csrfToken),
-    },
-  });
-  // #endregion
-  const putResp = await page.request.put(`${cfgBase}/${existing.id}`, {
-    data: payload,
-    headers: csrfToken ? { "X-CSRF-Token": csrfToken } : undefined,
-    timeout: LONG_TIMEOUT,
-  });
-  if (!putResp.ok()) {
-    const status = putResp.status();
-    const body = await putResp.text();
-    await putResp.dispose();
-    throw new Error(
-      `Failed to update FILE config directory for analyzer ${analyzerIdInt} (HTTP ${status}): ${body}`,
-    );
-  }
-  const putBodySnippet = (await putResp.text()).slice(0, 220);
-  // #region agent log
-  debugLog({
-    phase: "file-config",
-    hypothesisId: "F3",
-    location:
-      "helpers/create-analyzer-from-profile.ts:file-config-update-success",
-    message: "PUT analyzer succeeded (bridge will re-register watch dir)",
-    runId: "file-config",
-    data: {
-      analyzerId: analyzerIdInt,
-      status: putResp.status(),
-      bodySnippet: putBodySnippet,
-    },
-  });
-  // #endregion
-  await putResp.dispose();
 }
 
 export async function createAnalyzerFromProfile(
@@ -586,6 +437,15 @@ export async function createAnalyzerFromProfile(
   await form.fillName(config.name);
   await presentation.pause(500);
 
+  // Fill file import directories for FILE analyzers (in the unified form, before save)
+  if (config.protocol === "FILE" && config.push.targetDir) {
+    const dirs = buildFileImportDirectories(config.push.targetDir);
+    await form.fillImportDirectory(dirs.importDirectory);
+    await form.fillArchiveDirectory(dirs.archiveDirectory);
+    await form.fillErrorDirectory(dirs.errorDirectory);
+    await presentation.pause(500);
+  }
+
   // Fill IP and port for TCP analyzers
   if (config.protocol !== "FILE") {
     const harnessIp = assignedIp || null;
@@ -646,10 +506,6 @@ export async function createAnalyzerFromProfile(
     createResponse,
     config.name,
   );
-
-  if (config.protocol === "FILE" && config.push.targetDir) {
-    await updateFileImportDirectory(page, analyzerId, config.push.targetDir);
-  }
 
   return { analyzerId, assignedIp };
 }
