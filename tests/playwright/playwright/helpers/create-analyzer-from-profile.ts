@@ -437,8 +437,10 @@ export async function createAnalyzerFromProfile(
   await form.fillName(config.name);
   await presentation.pause(500);
 
-  // Fill file import directories for FILE analyzers (in the unified form, before save)
+  // Fill file import directories for FILE analyzers (in the unified form, before save).
+  // Wait for the name onBlur → suggestFileDirectories to settle before overwriting.
   if (config.protocol === "FILE" && config.push.targetDir) {
+    await presentation.pause(1_000);
     const dirs = buildFileImportDirectories(config.push.targetDir);
     await form.fillImportDirectory(dirs.importDirectory);
     await form.fillArchiveDirectory(dirs.archiveDirectory);
