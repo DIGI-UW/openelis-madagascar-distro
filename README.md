@@ -25,6 +25,13 @@ You can find more information on how to set up OpenELIS at our [docs page](http:
 |---------- |:-------------:|------:                       |
 | OpenELIS Frontend  |    https://localhost/  |  admin: adminADMIN!
 
+### HTTPS (public hostname, Let's Encrypt)
+
+Optional overlay `docker-compose.letsencrypt.yml` and `scripts/generate-letsencrypt-certs.sh` enable
+trusted TLS for one or more public hostnames (HTTP-01). The hostname list is configurable through
+Compose env vars such as `LETSENCRYPT_DOMAINS`, `LETSENCRYPT_PRIMARY_DOMAIN`, and `LETSENCRYPT_CERT_NAME`.
+See [`docs/letsencrypt.md`](./docs/letsencrypt.md).
+
 ### Analyzer bridge and validation
 
 - **`ANALYZER_BRIDGE_URL`** is set on the webapp so OpenELIS can register analyzers with the bridge (`docker-compose.yml`).

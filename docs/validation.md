@@ -76,6 +76,17 @@ curl -k -sSf https://localhost:8442/actuator/health
 curl -sSf http://localhost:8085/health
 ```
 
+### HTTPS bring-up (public apex, optional)
+
+For trusted TLS on `madagascar.openelis-global.org` via Let’s Encrypt (HTTP-01), see
+[`docs/letsencrypt.md`](./letsencrypt.md). Recommended order:
+
+1. Bring up the stack so `openelisglobal-proxy` is running.
+2. Run `./scripts/generate-letsencrypt-certs.sh --dry-run` (uses production-safe validation only).
+3. Run `./scripts/generate-letsencrypt-certs.sh` for real issuance.
+4. `docker compose -f docker-compose.yml -f docker-compose.letsencrypt.yml up -d --force-recreate proxy`
+5. Verify HTTPS and the same app routes (`/` → frontend, `/api/` → backend).
+
 The overlay adds **`itechuw/astm-mock-server:latest`** (published mock; same family as upstream `analyzer-mock-server`) and extra bridge ports/env for ASTM forward-to-mock and HL7/MLLP.
 
 ## Reset to clean E2E state

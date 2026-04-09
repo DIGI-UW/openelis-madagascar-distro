@@ -24,6 +24,7 @@ upstream app guidance first:
 Also consult:
 - `README.md`
 - `docs/validation.md`
+- `docs/letsencrypt.md` (optional public HTTPS)
 
 ## Repo Boundary
 
@@ -64,6 +65,10 @@ Analyzer validation overlay:
 
 Local image override:
 - `docker-compose.local-images.yml`
+
+Public TLS (Let's Encrypt, optional):
+- `docker-compose.letsencrypt.yml` — proxy reads `/etc/letsencrypt` and uses `configs/nginx/docker-entrypoint.sh`
+- `docs/letsencrypt.md` — issuance, dry-run, and renewal
 
 For local analyzer validation, prefer bringing the stack up with all required
 layers:
