@@ -109,8 +109,10 @@ services:
             - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
             - ./configs/analyzer-profiles:/data/analyzer-profiles:ro
             - analyzer-imports:/data/analyzer-imports
-            # Host filesystem for real analyzer file drops (NFS, USB, etc.)
-            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files —
+            # see plan mellow-honking-cascade (Phase 0.3).
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
         secrets:
             - source: common.properties
             
@@ -210,8 +212,10 @@ services:
             - ./configs/astm/configuration.yml:/app/configuration.yml:ro
             -  key_trust-store-volume:/etc/openelis-global
             - analyzer-imports:/data/analyzer-imports
-            # Host filesystem for real analyzer file drops (NFS, USB, etc.)
-            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files —
+            # see plan mellow-honking-cascade (Phase 0.3).
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
         environment:
             SPRING_PROFILES_ACTIVE: dev
             BRIDGE_FILE_ENABLED: "true"
