@@ -12,24 +12,7 @@
       "text": "Serial Number (SN)",
       "type": "integer",
       "required": false
-    },
-    {
-      "linkId": "id",
-      "text": "Sample Identifier (ID range)",
-      "type": "string",
-      "required": false
-    },
-    {
-      "linkId": "storagefreezerlocation",
-      "text": "Storage Freezer # & Location",
-      "type": "string",
-      "required": false
-    },
-    {
-      "text":"Lab person received",
-      "linkId":"labpersonreceived",
-      "type":"string",
-      "required":false
     }
   ]
 }
+
