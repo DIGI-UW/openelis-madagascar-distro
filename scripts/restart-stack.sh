@@ -116,7 +116,36 @@ if [[ -z "$READY" ]]; then
   exit 1
 fi
 
-echo "[6/6] Smoke-checking bridge + mock..."
+echo "[6/7] Smoke-checking bridge + mock..."
 curl -k -sSf https://localhost:8442/actuator/health &>/dev/null && echo "    Bridge: UP" || echo "    Bridge: not ready"
 curl -sSf http://localhost:8085/health &>/dev/null && echo "    Mock: UP" || echo "    Mock: not ready"
+
+# v5 §5: no-preseeded-analyzers invariant. A fresh --clean restart must
+# produce an empty clinlims.analyzer table. If any row exists post-boot
+# before a test runs, some Liquibase migration or baseline CSV is seeding
+# analyzer rows — a Principle X violation that produces silent
+# stale-state bugs. Fail loudly with the offending rows listed.
+if [[ -n "$CLEAN_FLAG" ]]; then
+  echo "[7/7] Verifying no pre-seeded analyzers (v5 §5 invariant)..."
+  DB_CONTAINER="$(docker ps -q -f name=openelisglobal-database 2>/dev/null || true)"
+  if [[ -n "$DB_CONTAINER" ]]; then
+    ANALYZER_COUNT="$(docker exec "$DB_CONTAINER" psql -U clinlims -d clinlims \
+      -tAc "SELECT COUNT(*) FROM clinlims.analyzer" 2>/dev/null | tr -d '[:space:]')"
+    if [[ "$ANALYZER_COUNT" != "0" ]]; then
+      echo "[7/7] FAIL: fresh DB has $ANALYZER_COUNT pre-seeded analyzer rows"
+      echo "    Offending rows:"
+      docker exec "$DB_CONTAINER" psql -U clinlims -d clinlims \
+        -c "SELECT id, name, analyzer_type_id, status FROM clinlims.analyzer ORDER BY id;" \
+        2>&1 | sed 's/^/      /'
+      echo
+      echo "    Root cause is a Liquibase changeset or baseline CSV that inserts"
+      echo "    analyzer rows. Per v5 §5: no pre-seeded analyzers EVER."
+      exit 1
+    fi
+    echo "    OK: zero pre-seeded analyzers"
+  else
+    echo "    DB container not running — skipping invariant check"
+  fi
+fi
+
 echo "done"
