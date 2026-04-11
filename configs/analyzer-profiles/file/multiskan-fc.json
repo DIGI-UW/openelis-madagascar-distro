@@ -18,9 +18,14 @@
   ],
   "column_mapping": {
     "Well": "position",
+    "Well Position": "position",
+    "Position": "position",
     "Sample ID": "sampleId",
+    "SampleID": "sampleId",
+    "Sample Number": "sampleId",
     "Absorbance (450 nm)": "result",
     "Absorbance": "result",
+    "OD_450": "result",
     "Content": "content",
     "Concentration": "concentration"
   },
@@ -46,6 +51,7 @@
   "configDefaults": {
     "fileFormat": "CSV",
     "delimiter": ";",
-    "hasHeader": true
+    "hasHeader": true,
+    "skipRows": 1
   }
 }

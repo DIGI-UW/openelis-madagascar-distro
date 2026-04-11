@@ -18,10 +18,21 @@
   ],
   "column_mapping": {
     "WellPosition": "position",
+    "Well Position": "position",
+    "Well": "position",
     "SampleID": "sampleId",
+    "Sample ID": "sampleId",
+    "SampleNumber": "sampleId",
+    "Sample Number": "sampleId",
     "OD_450": "result",
+    "OD 450": "result",
+    "OD450": "result",
+    "Absorbance (450 nm)": "result",
     "OD_620": "referenceOD",
+    "OD 620": "referenceOD",
+    "OD620": "referenceOD",
     "CorrectedOD": "correctedOD",
+    "Corrected OD": "correctedOD",
     "Interpretation": "interpretation"
   },
   "locale_support": {
@@ -46,7 +57,7 @@
   },
   "configDefaults": {
     "fileFormat": "CSV",
-    "delimiter": "\t",
+    "delimiter": ";",
     "hasHeader": true
   }
 }

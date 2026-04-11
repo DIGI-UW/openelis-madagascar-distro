@@ -9,10 +9,11 @@ org:
       #   hostName: astm-http-bridge2
       #   port: 12001
       forward-http-server:
-        uri: https://oe.openelis.org:8443/api/OpenELIS-Global/analyzer/astm
+        # HttpForwardingRouter appends /astm, /hl7, /csv (CI harness pattern)
+        uri: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
         username: admin
         password: adminADMIN!
-        healthUri: https://oe.openelis.org:8443/api/OpenELIS-Global/health
+        healthUri: https://openelisglobal-webapp:8443/api/OpenELIS-Global/health
         healthMethod: GET
 management:
   health:
@@ -20,13 +21,14 @@ management:
       enabled: true
 
 openelis:
-  url: https://oe.openelis.org:8443/api/OpenELIS-Global/analyzer/astm
+  url: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
   timeout: 30000
   ssl:
     verify: false  # Development only - uses self-signed certs
 
 astm:
-  port: 5001
+  # Must match container listen port (bridge listens on 12001 in published image)
+  port: 12001
   bind: 0.0.0.0
   timeout: 30000
 
