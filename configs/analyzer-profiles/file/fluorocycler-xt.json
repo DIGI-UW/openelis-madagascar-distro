@@ -1,10 +1,11 @@
 {
   "profileMeta": {
     "id": "fluorocycler-xt",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "displayName": "Bruker FluoroCycler XT",
     "manufacturer": "Bruker"
   },
+  "category": "MOLECULAR",
   "protocol": {
     "name": "FILE",
     "format": "EXCEL"
@@ -14,53 +15,33 @@
     ".xls"
   ],
   "site_workflow": {
-    "description": "FluoroCycler XT natively exports PDF only. Technicians at LA2M manually copy values from FluoroSoftware into an Excel file with labeled column headers. Loris uploaded the corrected Excel format with headers on 2026-03-25.",
-    "native_export": "PDF",
-    "import_format": "Manual Excel copy with headers"
+    "description": "Fluorocycler XT at LA2M exports single-sheet XLSX files with plate-position columns (Row/Col), Sample ID, Type (Standard/Unknown/Positive/Negative), optional Calc. Conc. (HIV VL only), and a free-text Result column carrying the clinical interpretation. One file = one assay; the assay is determined by the analyzer-instance's filePattern + defaultTestCode in OE (HIV VL vs Arbovirus), not by a per-row column. Profile rewritten 2026-04-10 to match real /mnt exports after the v1.1.0 profile (which targeted a hypothetical Loris manual template) was found to not match reality.",
+    "native_export": "PDF (tech exports Excel via FluoroSoftware result copy)",
+    "import_format": "Single-sheet XLSX, headers at row 0"
   },
   "column_mapping": {
-    "SampleID": "sampleId",
-    "WellPosition": "position",
-    "AssayName": "assayName",
-    "TargetName": "testCode",
-    "TargetNo": "targetNo",
-    "CP": "result",
-    "Interpretation": "interpretation",
-    "CalcConc": "calcConc",
-    "CalcConcUnit": "calcConcUnit",
-    "RunDate": "testDate",
-    "RunID": "runId",
-    "Notes": "notes"
+    "Sample ID": "sampleId",
+    "Row": "row",
+    "Col": "col",
+    "Type": "qcTask",
+    "Calc. Conc.": "result",
+    "Result": "interpretation"
   },
   "required_columns": [
-    "SampleID",
-    "WellPosition",
-    "TargetName",
-    "CP",
-    "Interpretation"
+    "Sample ID",
+    "Result"
   ],
   "optional_columns": [
-    "AssayName",
-    "TargetNo",
-    "CalcConc",
-    "CalcConcUnit",
-    "RunDate",
-    "RunID",
-    "Notes"
+    "Row",
+    "Col",
+    "Type",
+    "Calc. Conc."
   ],
-  "fallback_mapping": {
-    "description": "If technician uses abbreviated headers or French labels, try these alternates",
-    "CT": "result",
-    "Ct": "result",
-    "Echantillon": "sampleId",
-    "Position": "position",
-    "Cible": "testCode",
-    "Resultat": "result",
-    "Interpretation": "interpretation"
-  },
   "default_test_mappings": [
     { "test_code": "VIH-1", "test_name_hint": "HIV-1 Viral Load", "loinc": "20447-9", "unit": "copies/mL" },
-    { "test_code": "IC", "test_name_hint": "Internal Control DNA", "loinc": "89578-3", "unit": "" }
+    { "test_code": "CHIKV", "test_name_hint": "Chikungunya PCR", "loinc": "60260-7", "unit": "" },
+    { "test_code": "DENV", "test_name_hint": "Dengue PCR", "loinc": "7855-0", "unit": "" },
+    { "test_code": "ZIKV", "test_name_hint": "Zika PCR", "loinc": "85622-9", "unit": "" }
   ],
   "configDefaults": {
     "fileFormat": "EXCEL",
