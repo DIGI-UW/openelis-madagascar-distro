@@ -27,21 +27,31 @@
     "Calc. Conc.": "result",
     "Result": "interpretation"
   },
-  "required_columns": [
-    "Sample ID",
-    "Result"
-  ],
-  "optional_columns": [
-    "Row",
-    "Col",
-    "Type",
-    "Calc. Conc."
-  ],
   "default_test_mappings": [
-    { "test_code": "VIH-1", "test_name_hint": "HIV-1 Viral Load", "loinc": "20447-9", "unit": "copies/mL" },
-    { "test_code": "CHIKV", "test_name_hint": "Chikungunya PCR", "loinc": "60260-7", "unit": "" },
-    { "test_code": "DENV", "test_name_hint": "Dengue PCR", "loinc": "7855-0", "unit": "" },
-    { "test_code": "ZIKV", "test_name_hint": "Zika PCR", "loinc": "85622-9", "unit": "" }
+    {
+      "test_code": "VIH-1",
+      "test_name_hint": "HIV-1 Viral Load",
+      "loinc": "20447-9",
+      "unit": "copies/mL"
+    },
+    {
+      "test_code": "CHIKV",
+      "test_name_hint": "Chikungunya PCR",
+      "loinc": "60260-7",
+      "unit": ""
+    },
+    {
+      "test_code": "DENV",
+      "test_name_hint": "Dengue PCR",
+      "loinc": "7855-0",
+      "unit": ""
+    },
+    {
+      "test_code": "ZIKV",
+      "test_name_hint": "Zika PCR",
+      "loinc": "85622-9",
+      "unit": ""
+    }
   ],
   "configDefaults": {
     "fileFormat": "EXCEL",
