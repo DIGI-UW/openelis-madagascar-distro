@@ -34,14 +34,6 @@
     "header_marker": "Well",
     "max_sheets_to_scan": 5
   },
-  "line_field_order": [
-    "sampleId",
-    "testCode",
-    "result",
-    "position",
-    "ctValue",
-    "quantityRaw"
-  ],
   "default_test_mappings": [
     {
       "test_code": "VIH-1",
