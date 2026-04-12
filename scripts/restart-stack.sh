@@ -2,8 +2,13 @@
 # Restart the full OpenELIS stack (all overlays).
 #
 # Usage:
-#   ./scripts/restart-stack.sh          # restart, keep data
-#   ./scripts/restart-stack.sh --clean  # restart, remove volumes (DB, certs, indexes)
+#   ./scripts/restart-stack.sh                    # restart, keep data
+#   ./scripts/restart-stack.sh --clean             # restart, wipe DB + volumes
+#   ./scripts/restart-stack.sh --rebuild           # rebuild all images first
+#   ./scripts/restart-stack.sh --clean --rebuild   # full reset: rebuild + wipe + restart
+#
+# --rebuild builds webapp, frontend, and demo-tests from local source.
+# Requires OE_REPO env var or ../OpenELIS-Global-2 to exist.
 #
 # Robustness:
 # - `compose down` is wrapped in `timeout 60` with `-t 5 --remove-orphans`
@@ -25,11 +30,37 @@ COMPOSE="docker compose \
   -f docker-compose.letsencrypt.yml"
 
 CLEAN_FLAG=""
-if [[ "${1:-}" == "--clean" ]]; then
-  CLEAN_FLAG="-v"
-  echo "[mode] --clean: volumes will be wiped"
-else
-  echo "[mode] preserve volumes"
+REBUILD_FLAG=""
+OE_REPO="${OE_REPO:-$(realpath "$ROOT/../../OpenELIS-Global-2" 2>/dev/null || echo "")}"
+
+for arg in "$@"; do
+  case "$arg" in
+    --clean) CLEAN_FLAG="-v"; echo "[mode] --clean: volumes will be wiped";;
+    --rebuild) REBUILD_FLAG="yes"; echo "[mode] --rebuild: local images will be built";;
+  esac
+done
+if [[ -z "$CLEAN_FLAG" && -z "$REBUILD_FLAG" ]]; then
+  echo "[mode] preserve volumes, no rebuild"
+fi
+
+if [[ -n "$REBUILD_FLAG" ]]; then
+  if [[ -z "$OE_REPO" || ! -d "$OE_REPO" ]]; then
+    echo "ERROR: --rebuild requires OE_REPO env var or ../OpenELIS-Global-2 to exist"
+    echo "  Set: export OE_REPO=/path/to/OpenELIS-Global-2"
+    exit 1
+  fi
+  echo "[0/7] Building local images..."
+  echo "  → webapp (backend)..."
+  DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
+    -t itechuw/openelis-global-2:local "$OE_REPO" 2>&1 | tail -1
+  echo "  → frontend..."
+  DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
+    -t itechuw/openelis-global-2-frontend:local \
+    -f "$OE_REPO/frontend/Dockerfile.prod" "$OE_REPO/frontend" 2>&1 | tail -1
+  echo "  → demo-tests..."
+  docker build -t madagascar-demo-tests:local \
+    -f "$ROOT/tests/playwright/Dockerfile" "$ROOT/tests/playwright" 2>&1 | tail -1
+  echo "  All images built."
 fi
 
 echo "[1/6] Stopping stack (compose down -t 5 --remove-orphans, 60s cap)..."
