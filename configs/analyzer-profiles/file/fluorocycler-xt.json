@@ -16,42 +16,25 @@
   ],
   "site_workflow": {
     "description": "Fluorocycler XT at LA2M exports single-sheet XLSX files with plate-position columns (Row/Col), Sample ID, Type (Standard/Unknown/Positive/Negative), optional Calc. Conc. (HIV VL only), and a free-text Result column carrying the clinical interpretation. One file = one assay; the assay is determined by the analyzer-instance's filePattern + defaultTestCode in OE (HIV VL vs Arbovirus), not by a per-row column. Profile rewritten 2026-04-10 to match real /mnt exports after the v1.1.0 profile (which targeted a hypothetical Loris manual template) was found to not match reality.",
-    "native_export": "PDF (tech exports Excel via FluoroSoftware result copy)",
-    "import_format": "Single-sheet XLSX, headers at row 0"
+    "native_export": "PDF only (no structured export from FluoroSoftware)",
+    "import_format": "Standardized FC-XT_Template.xlsx (13 columns per OGC-420)"
   },
   "column_mapping": {
-    "Sample ID": "sampleId",
-    "Row": "row",
-    "Col": "col",
-    "Type": "qcTask",
-    "Calc. Conc.": "result",
-    "Result": "interpretation"
+    "SampleID": "sampleId",
+    "WellPosition": "position",
+    "TargetName": "testCode",
+    "CP": "ctValue",
+    "Interpretation": "interpretation",
+    "CalcConc": "result",
+    "CalcConcUnit": "units",
+    "RunDate": "testDate",
+    "Type": "qcTask"
   },
   "default_test_mappings": [
-    {
-      "test_code": "VIH-1",
-      "test_name_hint": "HIV-1 Viral Load",
-      "loinc": "20447-9",
-      "unit": "copies/mL"
-    },
-    {
-      "test_code": "CHIKV",
-      "test_name_hint": "Chikungunya PCR",
-      "loinc": "60260-7",
-      "unit": ""
-    },
-    {
-      "test_code": "DENV",
-      "test_name_hint": "Dengue PCR",
-      "loinc": "7855-0",
-      "unit": ""
-    },
-    {
-      "test_code": "ZIKV",
-      "test_name_hint": "Zika PCR",
-      "loinc": "85622-9",
-      "unit": ""
-    }
+    { "test_code": "VIH-1", "test_name_hint": "HIV-1 Viral Load", "loinc": "20447-9", "unit": "copies/mL" },
+    { "test_code": "CHIKV", "test_name_hint": "Chikungunya PCR", "loinc": "60260-7", "unit": "" },
+    { "test_code": "DENV", "test_name_hint": "Dengue PCR", "loinc": "7855-0", "unit": "" },
+    { "test_code": "ZIKV", "test_name_hint": "Zika PCR", "loinc": "85622-9", "unit": "" }
   ],
   "configDefaults": {
     "fileFormat": "EXCEL",
