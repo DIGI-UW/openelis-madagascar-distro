@@ -168,6 +168,7 @@ export async function acceptAndVerifyResults(
     await expect(saveInProgress).toBeHidden({ timeout: LONG_TIMEOUT });
     await expect(saveButton).toBeEnabled({ timeout: LONG_TIMEOUT });
   }
+  await presentation.evidence("demo-05-results-accepted");
 
   // ── Verify in OE results view, not on the staging page ───────────
   await presentation.step(
@@ -184,6 +185,7 @@ export async function acceptAndVerifyResults(
       testInfo,
     },
   );
+  await presentation.evidence("demo-06-accession-results-view");
   // Hold on AccessionResults so the viewer can see the final outcome
   await presentation.pause(5_000);
 }
