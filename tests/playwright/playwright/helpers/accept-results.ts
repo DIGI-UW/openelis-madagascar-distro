@@ -150,9 +150,13 @@ export async function acceptAndVerifyResults(
   await presentation.evidence("demo-05-results-accepted");
 
   // ── Verify in AccessionResults ──────────────────────────────────
+  // Show a step card BEFORE navigating so the video has visual feedback
+  // during the AccessionResults page load (React fetches data async after
+  // domcontentloaded — can take 10-30s under Docker load). Without this
+  // card the viewer sees a frozen screen.
   await presentation.step(
     stepOffset + 3,
-    `Viewing accepted results for ${primaryAccession}`,
+    `Loading AccessionResults for ${primaryAccession}...`,
   );
   await openAccessionResultsAndWaitForText(
     page,
@@ -164,7 +168,10 @@ export async function acceptAndVerifyResults(
       testInfo,
     },
   );
+  await presentation.step(
+    stepOffset + 4,
+    `Verified: ${primaryAccession} accepted in By Order view`,
+  );
   await presentation.evidence("demo-06-accession-results-view");
-  // Brief hold so the viewer can see the final outcome (was 5s, reduced)
   await presentation.pause(2_000);
 }
