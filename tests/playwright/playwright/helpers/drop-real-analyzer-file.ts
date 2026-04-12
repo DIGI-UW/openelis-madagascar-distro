@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { DemoPresentation } from "../fixtures/demo-presentation";
+import { DemoPresentation } from "./demo-presentation";
 
 /**
  * Drive the bridge `/admin/upload` UI with Playwright to upload a real
@@ -7,6 +7,24 @@ import { DemoPresentation } from "../fixtures/demo-presentation";
  * directory. This is the "true user workflow" Gate 1 video path: the
  * same admin UI a lab tech without NFS access would use manually, NOT
  * a docker cp shortcut.
+ *
+ * <p>Design note — unified video: the upload flow runs on the SAME page
+ * the test started on. Playwright records one continuous {@code video.webm}
+ * per test, so the viewer sees the full user story in a single stream:
+ * create analyzer → admin upload UI → staging → accept → AccessionResults.
+ *
+ * <p>How the cross-origin detour stays safe:
+ * <ul>
+ * <li>Global {@code ignoreHTTPSErrors: true} (playwright.config.ts) lets
+ * the main context load the bridge's self-signed cert.</li>
+ * <li>{@link Page#setExtraHTTPHeaders} installs the bridge's HTTP Basic
+ * credential only for the main-page navigations during the upload window,
+ * then clears it before handing control back — so subsequent OE requests
+ * don't carry a stray {@code Authorization} header.</li>
+ * <li>Cookies are origin-scoped: the OE session cookie at {@code proxy}
+ * is not sent to {@code openelis-analyzer-bridge:8443} and vice versa,
+ * so the OE session survives the detour and resumes cleanly.</li>
+ * </ul>
  *
  * Preconditions:
  * - Bridge is running and reachable at BRIDGE_URL (default
@@ -16,21 +34,7 @@ import { DemoPresentation } from "../fixtures/demo-presentation";
  *   dropdown AND in /admin/upload/analyzers/{id}/tests)
  * - The source file exists at a path Playwright can read — the
  *   demo-tests container bind-mounts ${ANALYZER_HOST_MOUNT:-/mnt}
- *   read-only per plan §2.5c
- *
- * Flow:
- * 1. Open new browser context with HTTP Basic creds for /admin/**
- * 2. Navigate to /admin/upload/index.html
- * 3. Wait for analyzer dropdown to populate via fetch
- * 4. Select the target analyzer by id
- * 5. Wait for test dropdown to populate (fires on analyzer-change event)
- * 6. Select the admin's declared test code from the test dropdown
- * 7. Pick the real file via setInputFiles
- * 8. Click Upload
- * 9. Wait for .banner.success response HTML
- * 10. Close context
- *
- * Plan ref: mellow-honking-cascade §2.5d.
+ *   read-only.
  */
 export interface DropRealFileOptions {
   /** The analyzer id as registered with the bridge (resolved via webapp REST lookup). */
@@ -62,37 +66,23 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     username: process.env.BRIDGE_USER ?? "bridge",
     password: process.env.BRIDGE_PASS ?? "changeme",
   };
-
-  const browser = page.context().browser();
-  if (!browser) {
-    throw new Error(
-      "dropRealAnalyzerFileViaBridgeUI: no browser from page.context() — cannot open upload UI context",
-    );
-  }
-
-  // httpCredentials alone handles the initial page navigation but NOT the
-  // page's subsequent fetch() XHRs, which triggered indefinite hangs in
-  // Playwright's 240s test timeout because /admin/upload/analyzers returned
-  // 401 to the JS fetch and the dropdown stayed empty. Inject the Basic
-  // Authorization header explicitly so every request the page makes
-  // carries it.
   const basicAuth =
     "Basic " +
     Buffer.from(`${creds.username}:${creds.password}`).toString("base64");
-  const ctx = await browser.newContext({
-    httpCredentials: creds,
-    ignoreHTTPSErrors: true,
-    extraHTTPHeaders: { Authorization: basicAuth },
-  });
-  const uploadPage = await ctx.newPage();
+
+  // Install Basic auth for the main-page navigations during the upload
+  // flow. This is per-page and applies to BOTH the main document load and
+  // the page's subsequent fetch()/XHR calls (the analyzer/test dropdowns
+  // populate via JS fetch to /admin/upload/analyzers*). Cleared in the
+  // finally block so the test's next request to OE does not carry a
+  // stray Authorization header.
+  await page.setExtraHTTPHeaders({ Authorization: basicAuth });
 
   try {
-    await opts.presentation.step(
-      "Opening bridge admin upload UI in a new browser tab",
-    );
-    await uploadPage.goto(`${bridgeUrl}/admin/upload/index.html`);
+    await opts.presentation.step("Opening bridge admin upload UI");
+    await page.goto(`${bridgeUrl}/admin/upload/index.html`);
     // Wait for the analyzer dropdown to populate (JS fetch to /admin/upload/analyzers)
-    await uploadPage.waitForFunction(
+    await page.waitForFunction(
       () => {
         const sel = document.querySelector(
           "#analyzer-select",
@@ -105,15 +95,16 @@ export async function dropRealAnalyzerFileViaBridgeUI(
       },
       { timeout: 10_000 },
     );
+    await opts.presentation.evidence("admin-upload-01-form-loaded");
 
     await opts.presentation.step(
       `Selecting analyzer ${opts.analyzerId} from upload UI dropdown`,
     );
-    await uploadPage.selectOption("#analyzer-select", opts.analyzerId);
+    await page.selectOption("#analyzer-select", opts.analyzerId);
     await opts.presentation.pause(750);
 
     // Test dropdown populates via fetch after analyzer-change event
-    await uploadPage.waitForFunction(
+    await page.waitForFunction(
       () => {
         const sel = document.querySelector(
           "#test-select",
@@ -131,14 +122,15 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     await opts.presentation.step(
       `Selecting test code ${opts.testCode} from upload UI Test dropdown`,
     );
-    await uploadPage.selectOption("#test-select", opts.testCode);
+    await page.selectOption("#test-select", opts.testCode);
     await opts.presentation.pause(500);
 
     await opts.presentation.step(
-      `Picking real file ${opts.sourcePath} via file picker`,
+      `Picking real file ${opts.sourcePath.split("/").pop()} via file picker`,
     );
-    await uploadPage.setInputFiles("#file-input", opts.sourcePath);
+    await page.setInputFiles("#file-input", opts.sourcePath);
     await opts.presentation.pause(750);
+    await opts.presentation.evidence("admin-upload-02-file-selected");
 
     await opts.presentation.step("Clicking Upload File");
     // Upload controller parses + forwards one FHIR Bundle per accession
@@ -146,14 +138,19 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     // ~30s for ~90 patient rows. Give the navigation 180s so the POST
     // completes before test timeout.
     await Promise.all([
-      uploadPage.waitForNavigation({ timeout: 180_000 }),
-      uploadPage.click("button[type='submit']"),
+      page.waitForNavigation({ timeout: 180_000 }),
+      page.click("button[type='submit']"),
     ]);
 
-    await uploadPage.waitForSelector(".banner.success", { timeout: 10_000 });
+    await page.waitForSelector(".banner.success", { timeout: 10_000 });
+    await opts.presentation.evidence("admin-upload-03-success-banner");
     await opts.presentation.pause(1_500);
   } finally {
-    await uploadPage.close();
-    await ctx.close();
+    // Clear the bridge Basic auth header so the next navigation back to
+    // OE does not carry a stray Authorization. OE's Spring Security would
+    // try to authenticate a "bridge:changeme" basic credential against
+    // its own user store and that would be a weird diagnostic path to
+    // debug later.
+    await page.setExtraHTTPHeaders({});
   }
 }

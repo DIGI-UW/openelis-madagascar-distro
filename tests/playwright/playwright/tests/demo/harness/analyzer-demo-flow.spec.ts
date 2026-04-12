@@ -318,6 +318,7 @@ test.describe("Madagascar analyzer demo flows", () => {
         analyzerId = created.analyzerId;
         dynamicIp = created.assignedIp;
         await findAnalyzerRowById(page, analyzerId, testInfo);
+        await presentation.evidence(`demo-01-analyzer-created-${config.name}`);
 
         // Step 2: Test connection is optional for demo harness flows.
         if (config.requireConnectionTest !== false) {
@@ -408,6 +409,9 @@ test.describe("Madagascar analyzer demo flows", () => {
           pushResults,
           primarySampleId,
           presentation,
+        );
+        await presentation.evidence(
+          `demo-04-results-in-staging-${config.name}`,
         );
 
         await presentation.step(step, "Results staged — ready to accept");
