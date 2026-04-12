@@ -32,16 +32,6 @@
     "ReagentLot": "reagentLot",
     "QC Status": "qcStatus"
   },
-  "line_field_order": [
-    "sampleId",
-    "testCode",
-    "result",
-    "interpretation",
-    "position",
-    "dateTime",
-    "dateTime",
-    "unit"
-  ],
   "default_test_mappings": [
     {
       "test_code": "TSH",
