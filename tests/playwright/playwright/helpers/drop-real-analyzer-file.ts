@@ -40,12 +40,13 @@ export interface DropRealFileOptions {
   /** The analyzer id as registered with the bridge (resolved via webapp REST lookup). */
   analyzerId: string;
   /**
-   * The test code to declare at upload time. Must be in the analyzer's
-   * AnalyzerTestMapping set (the controller will reject with 400
-   * otherwise). Event-scoped per upload — NOT persisted on the
-   * analyzer instance.
+   * Optional per-file test code to declare at upload time. Only needed when
+   * the file has NO per-row test labels (e.g. FluoroCycler). Files with
+   * per-row labels (e.g. QuantStudio's Target Name column) don't need this
+   * — leave undefined and the parser reads test identity from each row.
+   * If provided, must be in the analyzer's AnalyzerTestMapping set.
    */
-  testCode: string;
+  testCode?: string;
   /** Absolute path to the source file, inside the demo-tests container. */
   sourcePath: string;
   /** Demo presentation helper for step narration + pacing. */
@@ -119,11 +120,19 @@ export async function dropRealAnalyzerFileViaBridgeUI(
       { timeout: 10_000 },
     );
 
-    await opts.presentation.step(
-      `Selecting test code ${opts.testCode} from upload UI Test dropdown`,
-    );
-    await page.selectOption("#test-select", opts.testCode);
-    await opts.presentation.pause(500);
+    // testCode is optional — only select if the caller provided one
+    // (files with per-row test labels don't need a form declaration)
+    if (opts.testCode) {
+      await opts.presentation.step(
+        `Selecting test code ${opts.testCode} from upload UI Test dropdown`,
+      );
+      await page.selectOption("#test-select", opts.testCode);
+      await opts.presentation.pause(500);
+    } else {
+      await opts.presentation.step(
+        "Skipping test code selection — file has per-row test labels",
+      );
+    }
 
     await opts.presentation.step(
       `Picking real file ${opts.sourcePath.split("/").pop()} via file picker`,

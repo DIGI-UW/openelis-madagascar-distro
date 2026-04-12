@@ -115,13 +115,14 @@ const CONFIGS: AnalyzerTestConfig[] = [
       destination: "mllp://placeholder:2575",
     },
   },
-  // ── FILE Analyzers (Gate 1 v4: real-file upload via bridge /admin/upload UI) ──
+  // ── FILE Analyzers (Gate 1: real-file upload via bridge /admin/upload UI) ──
   //
-  // These three configs use realFileSourcePath to tell the test body to
-  // drive the bridge upload UI with the real LA2M file instead of the
-  // mock push. The uploadTestCode field is the tech's event-scoped
-  // declaration at drop time — NOT a persistent default on the analyzer
-  // instance (that path was reverted in v4). Plan §2.4.
+  // These configs use realFileSourcePath to drive the bridge upload UI
+  // with the real LA2M file instead of the mock push.
+  // uploadTestCode is OPTIONAL per-file metadata — only needed when the
+  // file has NO per-row test labels (e.g. FluoroCycler). Files with
+  // per-row labels (QuantStudio Target Name) omit it and let the parser
+  // read test identity from each row.
   {
     name: "Demo: QuantStudio 7",
     displayName: "QuantStudio 7 (FILE/Excel)",
@@ -135,10 +136,9 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "quantstudio7",
       targetDir: "/data/analyzer-imports/demo--quantstudio-7/incoming",
     },
-    // QS7 has per-row Target Name column; uploadTestCode is any valid
-    // analyzer mapping (parser's per-row path wins for rows that carry
-    // their own Target Name). Using VIH-1 as the form selection.
-    uploadTestCode: "VIH-1",
+    // QS7 has per-row Target Name column — each row carries its own
+    // test identity. No form-level uploadTestCode needed (optional
+    // metadata left blank so the parser uses per-row labels).
     realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/QuantStudio-7/archive/CVVIH 24 07 2024 serie 02 à valider.xlsx`,
   },
   {
@@ -154,9 +154,8 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "quantstudio5",
       targetDir: "/data/analyzer-imports/demo--quantstudio-5/incoming",
     },
-    // QS5 Arbo: per-row Target Name for CHIKV/DENV/ZIKV. Any valid
-    // mapping works as the form-level selection.
-    uploadTestCode: "CHIKV",
+    // QS5 Arbo: per-row Target Name for CHIKV/DENV/ZIKV. No form-level
+    // uploadTestCode needed — parser reads per-row labels.
     realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/QuantStudio-5/Arbo-extraitQS5.xls`,
   },
   {
@@ -354,17 +353,16 @@ test.describe("Madagascar analyzer demo flows", () => {
         // drop for Gate 1 FILE videos) or via mock server (everything else)
         let pushResults;
         let primarySampleId: string;
-        if (
-          config.realFileSourcePath &&
-          config.uploadTestCode &&
-          analyzerId
-        ) {
+        if (config.realFileSourcePath && analyzerId) {
           await presentation.step(
             step,
             `Upload real file ${config.realFileSourcePath.split("/").pop()} via bridge /admin/upload`,
           );
           await dropRealAnalyzerFileViaBridgeUI(page, {
             analyzerId,
+            // testCode is optional — files with per-row test labels
+            // (QuantStudio Target Name) don't need a form-level declaration.
+            // Only FluoroCycler (no per-row labels) requires it.
             testCode: config.uploadTestCode,
             sourcePath: config.realFileSourcePath,
             presentation,
