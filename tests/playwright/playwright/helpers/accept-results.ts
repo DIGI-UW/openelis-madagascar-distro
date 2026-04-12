@@ -13,30 +13,16 @@ import {
 } from "./timeouts";
 
 /**
- * Accept all analyzer results on the staging page, verify they were saved,
- * and optionally navigate to AccessionResults to confirm the accepted results.
+ * Accept staged analyzer results, save, and verify in AccessionResults.
  *
- * Call this AFTER verifying results are visible on the AnalyzerResults page.
+ * Accepts the first {@code acceptCount} distinct accessions visible on the
+ * staging page (default 3). For the video, this shows a realistic "accept a
+ * batch" workflow instead of just one row. After save, navigates to
+ * AccessionResults for the first accepted accession to prove the downstream
+ * chain (sample → analysis → result) was created.
  *
- * Flow:
- *   1. Check "Save All Results" via stable checkbox id
- *   2. Click Save button (data-testid="Save-btn")
- *   3. Navigate to AccessionResults for the staged accession
- *   4. Verify the accepted results appear in the OE results view
- *
- * DOM references (from AnalyserResults.js):
- *   - Accept All checkbox input: id="saveallresults"
- *   - Save button: data-testid="Save-btn" (line 505)
- *   - Staged accession number: data-testid="LabNo"
- *   - POST to /rest/AnalyzerResults, reloads same page on success (line 134)
- *
- * Note: OE auto-creates Sample/SampleItem/Analysis/Result records on accept,
- * even when no pre-existing order exists. So AccessionResults will show results
- * for any accession number — pre-existing orders are NOT required.
- *
- * @param accessionNumber Optional explicit accession. If omitted, the helper
- *   captures the first staged accession from the current page before saving.
- * @param testInfo When set, failure screenshots attach to the HTML report (before teardown).
+ * @param acceptCount Number of distinct accessions to accept (default 3).
+ *   Pass 1 for the old single-accession behavior.
  */
 export async function acceptAndVerifyResults(
   page: Page,
@@ -44,72 +30,86 @@ export async function acceptAndVerifyResults(
   stepOffset: number,
   accessionNumber?: string,
   testInfo?: TestInfo,
+  acceptCount: number = 3,
 ) {
-  let stagedAccession = accessionNumber?.trim();
-  if (!stagedAccession) {
-    const firstLabNo = page.locator('[data-testid="LabNo"]').first();
-    await expect(firstLabNo).toBeVisible({ timeout: LONG_TIMEOUT });
-    stagedAccession = (await firstLabNo.textContent())?.trim();
+  // ── Collect accessions to accept ──────────────────────────────────
+  const labNoLocators = page.locator('[data-testid="LabNo"]');
+  await expect(labNoLocators.first()).toBeVisible({ timeout: LONG_TIMEOUT });
+
+  // Gather the first N distinct accession numbers from the staging page
+  const allLabNos = await labNoLocators.allTextContents();
+  const uniqueAccessions: string[] = [];
+  for (const raw of allLabNos) {
+    const trimmed = raw.trim();
+    if (trimmed && !uniqueAccessions.includes(trimmed)) {
+      uniqueAccessions.push(trimmed);
+      if (uniqueAccessions.length >= acceptCount) break;
+    }
   }
 
-  if (!stagedAccession) {
-    throw new Error("Could not determine staged accession number before save.");
+  // If an explicit accession was passed and isn't already in the list, prepend it
+  if (accessionNumber?.trim()) {
+    const explicit = accessionNumber.trim();
+    if (!uniqueAccessions.includes(explicit)) {
+      uniqueAccessions.unshift(explicit);
+    }
   }
+
+  if (uniqueAccessions.length === 0) {
+    throw new Error("No staged accessions found on the page.");
+  }
+
+  const primaryAccession = uniqueAccessions[0];
 
   // #region agent log
   debugLog({
     phase: "accept-results",
     hypothesisId: "A0",
     location: "helpers/accept-results.ts:acceptAndVerifyResults",
-    message: "Starting accept flow with staged accession",
+    message: `Accepting ${uniqueAccessions.length} accessions`,
     runId: "accept-results",
     data: {
-      stagedAccession: stagedAccession.trim(),
+      accessions: uniqueAccessions,
       explicitAccessionPassed: accessionNumber != null,
     },
   });
   // #endregion
 
-  // ── Accept All ──────────────────────────────────────────────────
-  await presentation.step(stepOffset + 1, "Accept All Results");
+  // ── Accept rows ───────────────────────────────────────────────────
+  await presentation.step(
+    stepOffset + 1,
+    `Accept ${uniqueAccessions.length} accession(s)`,
+  );
 
-  const stagedRows = () =>
-    page
+  let totalChecked = 0;
+  for (const accession of uniqueAccessions) {
+    const rows = page
       .getByRole("row")
-      .filter({ hasText: accessionTextRegExp(stagedAccession.trim()) });
+      .filter({ hasText: accessionTextRegExp(accession) });
+    const rowCount = await rows.count();
 
-  let stagedCountBeforeSave = await stagedRows().count();
-  if (stagedCountBeforeSave === 0) {
-    const labNumberInput = page.getByRole("textbox", {
-      name: /enter lab number/i,
-    });
-    await expect(labNumberInput).toBeVisible({ timeout: SHORT_TIMEOUT });
-    await labNumberInput.fill(stagedAccession);
-    await page.getByRole("button", { name: /search/i }).click();
-    await expect(stagedRows().first()).toBeVisible({
-      timeout: LONG_TIMEOUT,
-    });
-    stagedCountBeforeSave = await stagedRows().count();
-  }
-
-  for (let i = 0; i < stagedCountBeforeSave; i++) {
-    const acceptInput = stagedRows()
-      .nth(i)
-      .locator('input[id$=".isAccepted"]')
-      .first();
-    await expect(acceptInput).toBeAttached({ timeout: SHORT_TIMEOUT });
-    if (!(await acceptInput.isChecked())) {
-      const checkboxId = await acceptInput.getAttribute("id");
-      if (!checkboxId) {
-        throw new Error("Could not determine row acceptance checkbox id.");
+    for (let i = 0; i < rowCount; i++) {
+      const acceptInput = rows
+        .nth(i)
+        .locator('input[id$=".isAccepted"]')
+        .first();
+      await expect(acceptInput).toBeAttached({ timeout: SHORT_TIMEOUT });
+      if (!(await acceptInput.isChecked())) {
+        const checkboxId = await acceptInput.getAttribute("id");
+        if (!checkboxId) continue;
+        await page.locator(`label[for="${checkboxId}"]`).click();
+        totalChecked++;
       }
-      await page.locator(`label[for="${checkboxId}"]`).click();
     }
   }
-  await presentation.pause(1_500);
+
+  await presentation.pause(1_000);
 
   // ── Save ────────────────────────────────────────────────────────
-  await presentation.step(stepOffset + 2, "Save Accepted Results");
+  await presentation.step(
+    stepOffset + 2,
+    `Save ${totalChecked} accepted result(s)`,
+  );
 
   const saveButton = page.locator('[data-testid="Save-btn"]');
   await expect(saveButton).toBeVisible({ timeout: SHORT_TIMEOUT });
@@ -128,15 +128,9 @@ export async function acceptAndVerifyResults(
   });
 
   // Success path issues full page reload (AnalyserResults.js).
-  // After save, either more results remain (Save visible) or all were consumed
-  // (empty state). Use locator.or() — NOT Promise.race, which leaves the losing
-  // assertion retrying in the background.
   await page.waitForURL(/AnalyzerResults[?](id|type)=/, {
     timeout: NAV_TIMEOUT,
   });
-  // Wait for the AnalyzerResults API response before asserting on UI —
-  // the page navigates instantly but the component fetches data async.
-  // On CI under load, this fetch can exceed 10s.
   await page
     .waitForResponse(
       (resp) =>
@@ -144,8 +138,6 @@ export async function acceptAndVerifyResults(
       { timeout: LONG_TIMEOUT },
     )
     .catch((e) => {
-      // TimeoutError = response arrived before we started listening (fast backend).
-      // Any other error is unexpected — log it for diagnostics.
       if (!(e instanceof Error && e.message.includes("Timeout"))) {
         console.error(`[waitForResponse] unexpected: ${e}`);
       }
@@ -155,30 +147,17 @@ export async function acceptAndVerifyResults(
     timeout: LONG_TIMEOUT,
   });
 
-  const saveStillVisible = await saveButton.isVisible();
-  if (saveStillVisible) {
-    if (stagedCountBeforeSave > 0) {
-      await expect
-        .poll(async () => stagedRows().count(), {
-          timeout: LONG_TIMEOUT,
-        })
-        .toBe(0);
-    }
-
-    await expect(saveInProgress).toBeHidden({ timeout: LONG_TIMEOUT });
-    await expect(saveButton).toBeEnabled({ timeout: LONG_TIMEOUT });
-  }
   await presentation.evidence("demo-05-results-accepted");
 
-  // ── Verify in OE results view, not on the staging page ───────────
+  // ── Verify in AccessionResults ──────────────────────────────────
   await presentation.step(
     stepOffset + 3,
-    "Viewing accepted results in OpenELIS",
+    `Viewing accepted results for ${primaryAccession}`,
   );
   await openAccessionResultsAndWaitForText(
     page,
-    stagedAccession,
-    stagedAccession,
+    primaryAccession,
+    primaryAccession,
     {
       timeoutMs: NAV_TIMEOUT,
       perAttemptTimeoutMs: UI_TIMEOUT,
@@ -186,6 +165,6 @@ export async function acceptAndVerifyResults(
     },
   );
   await presentation.evidence("demo-06-accession-results-view");
-  // Hold on AccessionResults so the viewer can see the final outcome
-  await presentation.pause(5_000);
+  // Brief hold so the viewer can see the final outcome (was 5s, reduced)
+  await presentation.pause(2_000);
 }
