@@ -444,8 +444,9 @@ export async function openAccessionResultsAndWaitForText(
   // in the DB. Navigate once with a generous assertion timeout instead of the
   // reload loop, which wastes memory and can trigger OOM browser crashes on CI.
   const navTimeout = options?.timeoutMs ?? LONG_TIMEOUT;
-  // Table/API hydration after domcontentloaded often exceeds NAV_TIMEOUT under docker load.
-  const visibilityTimeout = Math.max(navTimeout, 90_000);
+  // Use the caller's timeout for visibility too — no hardcoded floor.
+  // The old 90s minimum was masking genuine backend performance issues.
+  const visibilityTimeout = options?.perAttemptTimeoutMs ?? navTimeout;
   await page.goto(accessionResultsUrl(accessionNumber), {
     waitUntil: "domcontentloaded",
     timeout: navTimeout,
