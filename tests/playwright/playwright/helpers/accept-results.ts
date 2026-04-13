@@ -31,6 +31,7 @@ export async function acceptAndVerifyResults(
   accessionNumber?: string,
   testInfo?: TestInfo,
   acceptCount: number = 3,
+  configName?: string,
 ) {
   // ── Collect accessions to accept ──────────────────────────────────
   const labNoLocators = page.locator('[data-testid="LabNo"]');
@@ -147,7 +148,9 @@ export async function acceptAndVerifyResults(
     timeout: LONG_TIMEOUT,
   });
 
-  await presentation.evidence("demo-05-results-accepted");
+  await presentation.evidence(
+    `demo-05-results-accepted${configName ? `-${configName}` : ""}`,
+  );
 
   // ── Verify in AccessionResults ──────────────────────────────────
   // Show a step card BEFORE navigating so the video has visual feedback
@@ -172,6 +175,8 @@ export async function acceptAndVerifyResults(
     stepOffset + 4,
     `Verified: ${primaryAccession} accepted in By Order view`,
   );
-  await presentation.evidence("demo-06-accession-results-view");
+  await presentation.evidence(
+    `demo-06-accession-results-view${configName ? `-${configName}` : ""}`,
+  );
   await presentation.pause(2_000);
 }

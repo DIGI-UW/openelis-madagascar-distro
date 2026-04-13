@@ -51,6 +51,8 @@ export interface DropRealFileOptions {
   sourcePath: string;
   /** Demo presentation helper for step narration + pacing. */
   presentation: DemoPresentation;
+  /** Config name for unique evidence screenshot filenames (e.g., "Demo--FluoroCycler-XT"). */
+  configName?: string;
 }
 
 export async function dropRealAnalyzerFileViaBridgeUI(
@@ -96,7 +98,9 @@ export async function dropRealAnalyzerFileViaBridgeUI(
       },
       { timeout: 10_000 },
     );
-    await opts.presentation.evidence("admin-upload-01-form-loaded");
+    await opts.presentation.evidence(
+      `admin-upload-01-form-loaded${opts.configName ? `-${opts.configName}` : ""}`,
+    );
 
     await opts.presentation.step(
       `Selecting analyzer ${opts.analyzerId} from upload UI dropdown`,
@@ -139,7 +143,9 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     );
     await page.setInputFiles("#file-input", opts.sourcePath);
     await opts.presentation.pause(750);
-    await opts.presentation.evidence("admin-upload-02-file-selected");
+    await opts.presentation.evidence(
+      `admin-upload-02-file-selected${opts.configName ? `-${opts.configName}` : ""}`,
+    );
 
     await opts.presentation.step("Clicking Upload File");
     // Upload controller parses + forwards one FHIR Bundle per accession
@@ -152,7 +158,9 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     ]);
 
     await page.waitForSelector(".banner.success", { timeout: 10_000 });
-    await opts.presentation.evidence("admin-upload-03-success-banner");
+    await opts.presentation.evidence(
+      `admin-upload-03-success-banner${opts.configName ? `-${opts.configName}` : ""}`,
+    );
     await opts.presentation.pause(1_500);
   } finally {
     // Clear the bridge Basic auth header so the next navigation back to
