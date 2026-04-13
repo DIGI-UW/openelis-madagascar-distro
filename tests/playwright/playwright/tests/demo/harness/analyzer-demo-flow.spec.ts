@@ -171,13 +171,9 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "hain_fluorocycler",
       targetDir: "/data/analyzer-imports/demo--fluorocycler-xt/incoming",
     },
-    // Fluorocycler HIV file has NO per-row target column. The admin's
-    // VIH-1 declaration at upload time is the test identity for every
-    // row. The scanner independently finds 73 HIV-1 / GENERIC_HIV_CV
-    // mentions in the Result column and validates agreement with the
-    // admin's selection before the parser runs.
-    uploadTestCode: "VIH-1",
-    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/Fluorocycler-XT/HIV-result.xlsx`,
+    // Standardized template: TargetName column carries VIH-1 per row,
+    // so no form-level uploadTestCode needed (same as QuantStudio).
+    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/Fluorocycler-XT/FC-XT_HIV-result.xlsx`,
   },
   // ── Madagascar Sprint: 3 New FILE Analyzers ────────────────────
   {
