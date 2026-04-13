@@ -358,14 +358,13 @@ test.describe("Madagascar analyzer demo flows", () => {
             step,
             `Upload real file ${config.realFileSourcePath.split("/").pop()} via bridge /admin/upload`,
           );
+          const safeName = config.name.replace(/[^a-zA-Z0-9._-]/g, "-");
           await dropRealAnalyzerFileViaBridgeUI(page, {
             analyzerId,
-            // testCode is optional — files with per-row test labels
-            // (QuantStudio Target Name) don't need a form-level declaration.
-            // Only FluoroCycler (no per-row labels) requires it.
             testCode: config.uploadTestCode,
             sourcePath: config.realFileSourcePath,
             presentation,
+            configName: safeName,
           });
           // With a real-file upload there is no mock-provided sample id
           // list — sample IDs are whatever the real file contains. For
@@ -416,12 +415,15 @@ test.describe("Madagascar analyzer demo flows", () => {
         await presentation.pause(3_000);
 
         // Step 5: Accept results
+        const safeConfigName = config.name.replace(/[^a-zA-Z0-9._-]/g, "-");
         await acceptAndVerifyResults(
           page,
           presentation,
           step,
           primarySampleId,
           testInfo,
+          3,
+          safeConfigName,
         );
 
         await presentation.title(
