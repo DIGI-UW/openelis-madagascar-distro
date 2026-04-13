@@ -187,7 +187,9 @@ def convert(input_path: Path, output_path: Path, assay_name: str = "FluoroType H
         ws_out.cell(row=row_out, column=1, value=sample_id)
         ws_out.cell(row=row_out, column=2, value=well)
         ws_out.cell(row=row_out, column=3, value=assay_name)
-        ws_out.cell(row=row_out, column=4, value="HIV-1")
+        # TargetName must match the OE analyzer_test_map code (VIH-1),
+        # not the biological name (HIV-1). VIH = French abbreviation.
+        ws_out.cell(row=row_out, column=4, value="VIH-1")
         ws_out.cell(row=row_out, column=5, value=1)
         if cp is not None:
             ws_out.cell(row=row_out, column=6, value=cp)
