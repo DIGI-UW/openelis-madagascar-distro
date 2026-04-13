@@ -148,16 +148,17 @@ export async function dropRealAnalyzerFileViaBridgeUI(
     );
 
     await opts.presentation.step("Clicking Upload File");
-    // Upload controller parses + forwards one FHIR Bundle per accession
-    // synchronously before returning — a full HIV-result.xlsx can take
-    // ~30s for ~90 patient rows. Give the navigation 180s so the POST
-    // completes before test timeout.
+    // The bridge streams progress to the browser as it processes each
+    // accession (chunked HTML). The page starts loading immediately but
+    // the success banner only appears after all bundles are POSTed to OE
+    // (~0.5s per accession × ~90 accessions ≈ 45s). The video shows
+    // real-time "Accession N of M" progress lines instead of a frozen screen.
     await Promise.all([
       page.waitForNavigation({ timeout: 180_000 }),
       page.click("button[type='submit']"),
     ]);
 
-    await page.waitForSelector(".banner.success", { timeout: 10_000 });
+    await page.waitForSelector(".banner.success", { timeout: 120_000 });
     await opts.presentation.evidence(
       `admin-upload-03-success-banner${opts.configName ? `-${opts.configName}` : ""}`,
     );
