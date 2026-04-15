@@ -32,7 +32,7 @@ import {
   expectResultVisible,
   openAnalyzerResultsByIdAndWaitForText,
 } from "../../../helpers/results-ui";
-import { LONG_TIMEOUT, UI_TIMEOUT } from "../../../helpers/timeouts";
+import { LONG_TIMEOUT, TEST_TIMEOUT, UI_TIMEOUT } from "../../../helpers/timeouts";
 import type {
   AnalyzerTestConfig,
   PushResult,
@@ -203,6 +203,7 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "tecan_f50",
       targetDir: "/data/analyzer-imports/demo--tecan-infinite-f50/incoming",
     },
+    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/ELISA reader Tecan Infinite F50/Tecan-F50_HIV-result.csv`,
   },
   {
     name: "Demo: Thermo Multiskan FC",
@@ -217,6 +218,7 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "multiskan_fc",
       targetDir: "/data/analyzer-imports/demo--thermo-multiskan-fc/incoming",
     },
+    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/ELISA reader Multiscan FC/Multiskan-FC_HIV-result.csv`,
   },
 ];
 
@@ -273,9 +275,10 @@ async function verifyResults(
 // ── Test Suite ───────────────────────────────────────────────────
 
 test.describe("Madagascar analyzer demo flows", () => {
-  // File-upload scenarios can take 30+ seconds streaming FHIR bundles
-  // through OE one accession at a time; leave headroom for setup + cleanup.
-  test.setTimeout(420_000);
+  // Per-step waits (UI_TIMEOUT, LONG_TIMEOUT, NAV_TIMEOUT) bound individual
+  // interactions; this caps the whole flow. Stalls surface fast instead of
+  // burning minutes on hung tests.
+  test.setTimeout(TEST_TIMEOUT);
 
   for (const config of CONFIGS) {
     test(`${config.displayName}: full E2E flow`, async ({ page }, testInfo) => {

@@ -12,3 +12,12 @@ export const LONG_TIMEOUT = 30_000;
 
 /** Full page load, auth flows, initial bootstrap */
 export const NAV_TIMEOUT = 45_000;
+
+/**
+ * Test-level budget for a full E2E analyzer demo flow (create analyzer →
+ * mock/real push → staging → accept → AccessionResults → teardown).
+ * Per-step waits (UI_TIMEOUT, LONG_TIMEOUT, NAV_TIMEOUT) bound individual
+ * interactions; this caps the whole flow so stalls surface fast. If a test
+ * hits this, it's a real bug, not a slow build.
+ */
+export const TEST_TIMEOUT = 180_000;
