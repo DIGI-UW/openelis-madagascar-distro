@@ -160,7 +160,7 @@ const CONFIGS: AnalyzerTestConfig[] = [
   },
   {
     name: "Demo: FluoroCycler XT",
-    displayName: "FluoroCycler XT HIV VL (FILE/Excel)",
+    displayName: "FluoroCycler XT HIV VL (FILE/ODS)",
     analyzerType: "MOLECULAR",
     pluginType: "Generic File",
     profileName: "Bruker FluoroCycler XT",
@@ -171,9 +171,8 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "hain_fluorocycler",
       targetDir: "/data/analyzer-imports/demo--fluorocycler-xt/incoming",
     },
-    // Standardized template: TargetName column carries VIH-1 per row,
-    // so no form-level uploadTestCode needed (same as QuantStudio).
-    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/Fluorocycler-XT/FC-XT_HIV-result.xlsx`,
+    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/Fluorocycler-XT/result-septembre.ods`,
+    uploadTestCode: "VIH-1",
   },
   // ── Madagascar Sprint: 3 New FILE Analyzers ────────────────────
   {
@@ -207,7 +206,7 @@ const CONFIGS: AnalyzerTestConfig[] = [
   },
   {
     name: "Demo: Thermo Multiskan FC",
-    displayName: "Thermo Multiskan FC (FILE/CSV — ELISA)",
+    displayName: "Thermo Multiskan FC (FILE/CSV — Dengue IgG ELISA)",
     analyzerType: "IMMUNOLOGY",
     pluginType: "Generic File",
     profileName: "Thermo Multiskan FC",
@@ -218,7 +217,8 @@ const CONFIGS: AnalyzerTestConfig[] = [
       template: "multiskan_fc",
       targetDir: "/data/analyzer-imports/demo--thermo-multiskan-fc/incoming",
     },
-    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/ELISA reader Multiscan FC/Multiskan-FC_HIV-result.csv`,
+    realFileSourcePath: `${process.env.ANALYZER_HOST_MOUNT ?? "/mnt"}/la2m/central/analyzers_results/ELISA reader Multiscan FC/Multiskan-FC_Dengue-result.csv`,
+    uploadTestCode: "Dengue IgG",
   },
 ];
 

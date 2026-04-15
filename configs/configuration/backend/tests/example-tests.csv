@@ -23,3 +23,7 @@ RIFRESIST,Molecular Biology,Sputum,46244-0,Y,Y,57,,Rifampin Resistance,Résistan
 DENGUEPCR,Molecular Biology,Plasma|Serum,7855-0,Y,Y,60,,Dengue PCR,Dengue PCR,,
 CHIKVPCR,Molecular Biology,Plasma|Serum,60260-7,Y,Y,61,,Chikungunya PCR,Chikungunya PCR,,
 ZIKVPCR,Molecular Biology,Plasma|Serum,85622-9,Y,Y,62,,Zika PCR,Zika PCR,,
+XPERTMPOX,Molecular Biology,Sputum|Serum|Lesion Swab,82171-9,Y,Y,63,,Xpert Mpox,Xpert Mpox,,
+ICDNA,Molecular Biology,Plasma|Serum,89578-3,Y,Y,64,,Internal Control DNA,Contrôle Interne ADN,,
+DENGUEIGG,Serology,Serum,7854-3,Y,Y,65,,Dengue IgG,IgG Dengue,,
+DENGUEIGM,Serology,Serum,7852-7,Y,Y,66,,Dengue IgM,IgM Dengue,,
