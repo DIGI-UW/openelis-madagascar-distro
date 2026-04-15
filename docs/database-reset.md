@@ -194,6 +194,47 @@ COMPOSE_PROFILES=demo docker compose \
 Local video or ad hoc runs from `tests/playwright` should only happen after the
 reset and readiness checks above pass.
 
+## Analyzer-state reset (test environment only)
+
+Use this in addition to the test-data reset (above) when:
+
+- `analyzer_test_map` rows are pointing to wrong tests and provenance
+  is unclear (legacy admin entry, deleted profiles, etc.)
+- `analyzer_results` staging table has accumulated rows for analyzers
+  whose mappings or configuration you intend to recreate
+- `analyzer` table has `PENDING_REGISTRATION` stubs from prior
+  unregistered-source discovery runs that you want to clear out
+- bridge `dead-letters/` directory is full of captured-but-unrouted
+  ASTM messages from unregistered sources
+
+The standard `reset-test-database.sh` only resets E2E* / TEST-* sample
++ storage rows — it does NOT touch the analyzer subsystem. The analyzer
+ids in the production-data range (e.g. 397, 552, 634, 635) are
+preserved by design.
+
+For analyzer-state reset use:
+
+```bash
+./scripts/reset-analyzer-state.sh \
+  --force \
+  --include-stubs \
+  --include-deadletters
+```
+
+Hard precondition: `--include-deadletters` will refuse to run unless a
+real-message backup exists at `~/astm-fixtures-real-YYYYMMDD/`. The
+bridge dead-letter dir is the only place real captured ASTM messages
+live; clearing it without backup is destructive and unrecoverable.
+
+After running, restart the stack:
+
+```bash
+./scripts/restart-stack.sh
+```
+
+The bridge will re-create empty watch dirs on startup; analyzer
+re-creation goes through the normal UI / OE auto-registration flow.
+
 ## When to Escalate
 
 Stop and investigate before running tests if:
