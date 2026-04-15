@@ -219,8 +219,8 @@ services:
             LOGGING_LEVEL_ORG_ITECH: TRACE
             # Align with CI harness: HttpForwardingRouter appends /astm, /hl7, /csv
             ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
-            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: admin
-            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: adminADMIN!
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME:-admin}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD:-adminADMIN!}
             ORG_ITECH_AHB_FORWARD_HTTP_SERVER_INSECURE_TLS: "true"
             JDK_JAVA_OPTIONS: -Djdk.internal.httpclient.disableHostnameVerification=true
             JAVA_OPTS: | 
