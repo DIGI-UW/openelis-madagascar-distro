@@ -95,7 +95,9 @@ docker exec "$DB_CONTAINER" psql -U clinlims -d clinlims -c \
 if [ "$INCLUDE_STUBS" = true ]; then
   echo ""
   echo "[3a] Wiping PENDING_REGISTRATION stubs and their dependent rows..."
-  docker exec "$DB_CONTAINER" psql -U clinlims -d clinlims <<'SQL'
+  # Note: docker exec needs -i to pipe stdin (heredoc). Without -i the
+  # SQL script is silently dropped.
+  docker exec -i "$DB_CONTAINER" psql -U clinlims -d clinlims <<'SQL'
     DELETE FROM analyzer_results  WHERE analyzer_id IN (SELECT id FROM analyzer WHERE status = 'PENDING_REGISTRATION');
     DELETE FROM analyzer_test_map WHERE analyzer_id IN (SELECT id FROM analyzer WHERE status = 'PENDING_REGISTRATION');
     DELETE FROM analyzer          WHERE status = 'PENDING_REGISTRATION';
