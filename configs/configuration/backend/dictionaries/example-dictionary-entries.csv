@@ -1,8 +1,8 @@
 category,dictEntry,localAbbreviation,isActive,sortOrder,loincCode,localization:en,localization:fr,localization:es,localization:id
 Xpert Results,Positive,POS,Y,1,,Positive,Positif,,
 Xpert Results,Negative,NEG,Y,2,,Negative,Négatif,,
-Xpert Results,POS,POS,Y,3,,POS,POS,,
-Xpert Results,NEG,NEG,Y,4,,NEG,NEG,,
+Xpert Results,POS,XPOS,Y,3,,POS,POS,,
+Xpert Results,NEG,XNEG,Y,4,,NEG,NEG,,
 Xpert Results,Detected,DET,Y,5,,Detected,Détecté,,
 Xpert Results,Not Detected,ND,Y,6,,Not Detected,Non Détecté,,
 Xpert Results,MTB Detected,MTBD,Y,7,,MTB Detected,MTB Détecté,,
