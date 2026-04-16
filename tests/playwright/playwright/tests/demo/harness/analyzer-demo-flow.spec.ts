@@ -27,6 +27,7 @@ import { testAnalyzerConnection } from "../../../helpers/test-analyzer-connectio
 import { pushAnalyzerResult } from "../../../helpers/push-analyzer-result";
 import { dropRealAnalyzerFileViaBridgeUI } from "../../../helpers/drop-real-analyzer-file";
 import { acceptAndVerifyResults } from "../../../helpers/accept-results";
+import { validateResults } from "../../../helpers/validate-results";
 import {
   accessionTextRegExp,
   expectResultVisible,
@@ -425,9 +426,36 @@ test.describe("Madagascar analyzer demo flows", () => {
           safeConfigName,
         );
 
+        // Step 6: Validate results on the "Ready for Validation" screen.
+        // This is the regression guard for OE PR #3372 — validates that
+        // dict-typed results render without throwing FloatingDecimal
+        // NumberFormatException. When primarySampleId is empty (real-file
+        // uploads), pick the first accession visible on the AnalyzerResults
+        // page instead.
+        const accessionForValidation = primarySampleId || await (async () => {
+          const firstLabNo = page.locator('[data-testid="LabNo"]').first();
+          try {
+            const text = await firstLabNo.textContent({ timeout: 5_000 });
+            return text?.trim() || "";
+          } catch {
+            return "";
+          }
+        })();
+
+        if (accessionForValidation) {
+          await validateResults(
+            page,
+            presentation,
+            step + 4,
+            accessionForValidation,
+            testInfo,
+            safeConfigName,
+          );
+        }
+
         await presentation.title(
           "Flow Complete",
-          `${config.displayName}: ${pushResults.length} results accepted.`,
+          `${config.displayName}: ${pushResults.length} results accepted and validated.`,
         );
       } catch (e) {
         testFailed = true;
