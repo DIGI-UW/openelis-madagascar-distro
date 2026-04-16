@@ -84,7 +84,7 @@ services:
               ipv4_address: 172.20.1.121
         logging: *local-logging      
         environment:
-            - DEFAULT_PW=adminADMIN! 
+            - DEFAULT_PW=${OE_ADMIN_PASSWORD:-adminADMIN!}
             - TZ=America/New_York
               # Config variables loaded through Tomacat server.xml
             - CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://db.openelis.org:5432/clinlims -Ddatasource.username=clinlims -Ddatasource.password=${OE_DB_PASSWORD} -Doe.ssl.truststorepath=${SSL_TRUSTSTORE_PATH} -Doe.ssl.truststorepassword=${SSL_TRUSTSTORE_PASSWORD} -Doe.ssl.keystorepath=${SSL_KEYSTORE_PATH} -Doe.ssl.keystorepassword=${SSL_KEYSTORE_PASSWORD}
@@ -220,7 +220,7 @@ services:
             # Align with CI harness: HttpForwardingRouter appends /astm, /hl7, /csv
             ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
             ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME:-admin}
-            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD:-adminADMIN!}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: ${OE_ADMIN_PASSWORD:-adminADMIN!}
             ORG_ITECH_AHB_FORWARD_HTTP_SERVER_INSECURE_TLS: "true"
             JDK_JAVA_OPTIONS: -Djdk.internal.httpclient.disableHostnameVerification=true
             JAVA_OPTS: | 
