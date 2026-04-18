@@ -56,7 +56,7 @@ services:
             - DB_SUPERUSER_PASSWORD=${ADMIN_PASSWORD}   
         volumes:
               # preserves the database between containers
-            - ./configs/database/data:/var/lib/postgresql/data                
+            - ./configs/database/data3:/var/lib/postgresql/data                
 
         logging: *local-logging    
         networks:
@@ -74,6 +74,7 @@ services:
         depends_on:
             - db.openelis.org
             - certs
+            - openelis-analyzer-bridge
         ports:
             - "8080:8080"
             - "8443:8443"
@@ -83,7 +84,7 @@ services:
               ipv4_address: 172.20.1.121
         logging: *local-logging      
         environment:
-            - DEFAULT_PW=adminADMIN! 
+            - DEFAULT_PW=${OE_ADMIN_PASSWORD:-adminADMIN!}
             - TZ=America/New_York
               # Config variables loaded through Tomacat server.xml
             - CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://db.openelis.org:5432/clinlims -Ddatasource.username=clinlims -Ddatasource.password=${OE_DB_PASSWORD} -Doe.ssl.truststorepath=${SSL_TRUSTSTORE_PATH} -Doe.ssl.truststorepassword=${SSL_TRUSTSTORE_PASSWORD} -Doe.ssl.keystorepath=${SSL_KEYSTORE_PATH} -Doe.ssl.keystorepassword=${SSL_KEYSTORE_PASSWORD}
@@ -92,6 +93,8 @@ services:
             - SSL_KEYSTORE_PASSWORD
             - SSL_TRUSTSTORE_PATH
             - SSL_TRUSTSTORE_PASSWORD
+            # Bridge HTTPS API (same Docker network). OE pushes analyzer bindings here at startup.
+            - ANALYZER_BRIDGE_URL=https://bridge.openelis.org:8443
         volumes:
             -  key_trust-store-volume:/etc/openelis-global
             -  lucene_index-vol:/var/lib/lucene_index
@@ -105,6 +108,12 @@ services:
             - ./configs/configuration:/var/lib/openelis-global/configuration
             - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
             - ./configs/analyzer-profiles:/data/analyzer-profiles:ro
+            - analyzer-imports:/data/analyzer-imports
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files —
+            # see plan mellow-honking-cascade (Phase 0.3).
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+
         secrets:
             - source: common.properties
             
@@ -164,6 +173,8 @@ services:
             - certs-vol:/etc/nginx/certs/
             - keys-vol:/etc/nginx/keys/
             - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            # ACME HTTP-01 webroot; used by scripts/generate-letsencrypt-certs.sh and docker-compose.letsencrypt.yml
+            - ./volume/nginx/certbot:/var/www/certbot
             # - /KEYSTORE_PASSWORD:/etc/nginx/private/key_pass
             # - /etc/openelis-global/nginx.cert.pem:/etc/nginx/certs/cert.crt
             # - /etc/openelis-global/nginx.key.pem:/etc/nginx/certs/cert.key
@@ -174,38 +185,52 @@ services:
         depends_on:
             - certs    
    
-    autoheal:
-        container_name: autoheal-oe
-        image: willfarrell/autoheal:1.2.0
-        tty: true
-        restart: always
-        networks:
-            - openelis-network
-        environment:
-            AUTOHEAL_CONTAINER_LABEL: all
-            TZ: America/New_York
-        logging: *local-logging    
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock   
-
     openelis-analyzer-bridge:
-        image: itechuw/openelis-analyzer-bridge:3.0.1
+        container_name: openelis-analyzer-bridge
+        image: itechuw/openelis-analyzer-bridge:develop
         platform: linux/amd64
+        depends_on:
+            certs:
+                condition: service_completed_successfully
         ports:
             - "8442:8443" # HTTPS API port
             - "12000:12001" # ASTM listen port
         volumes:
             - ./configs/astm/configuration.yml:/app/configuration.yml:ro
             -  key_trust-store-volume:/etc/openelis-global
+            - analyzer-imports:/data/analyzer-imports
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files —
+            # see plan mellow-honking-cascade (Phase 0.3).
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+            # Durable state store for the bridge's FileStateStore (SQLite, WAL mode).
+            # Lives on a dedicated named volume rather than sharing analyzer-imports
+            # or the ${ANALYZER_HOST_MOUNT} bind mount, so state survives container
+            # recreation AND Herbert's source NFS can stay :ro. See
+            # openelis-analyzer-bridge PR #34 (plan Phase 1.1).
+            - bridge-state:/data/openelis-analyzer-bridge
         environment:
-            SPRING_PROFILE: dev
+            SPRING_PROFILES_ACTIVE: dev
+            BRIDGE_FILE_ENABLED: "true"
+            # Point the bridge at the named volume mount. Must match the
+            # volume mount path above. Spring Boot maps this env var to the
+            # bridge.file.state-store-path config property.
+            BRIDGE_FILE_STATE_STORE_PATH: /data/openelis-analyzer-bridge/state.db
             LOGGING_LEVEL_ORG_ITECH: TRACE
+            # Align with CI harness: HttpForwardingRouter appends /astm, /hl7, /csv
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME:-admin}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: ${OE_ADMIN_PASSWORD:-adminADMIN!}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_INSECURE_TLS: "true"
+            JDK_JAVA_OPTIONS: -Djdk.internal.httpclient.disableHostnameVerification=true
             JAVA_OPTS: | 
                 -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH} 
                 -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD}
                 -Djavax.net.ssl.trustStoreType=pkcs12
         networks:
-            - openelis-network    
+            openelis-network:
+                aliases:
+                    - bridge.openelis.org
         restart: unless-stopped                 
             
 secrets: 
@@ -226,3 +251,10 @@ volumes:
   certs-vol:
   keys-vol:
   lucene_index-vol:
+  analyzer-imports:
+  # Durable FileStateStore for the analyzer bridge. Must survive container
+  # recreation so the bridge honors its non-destructive contract across
+  # deploys (PROCESSED / FAILED_NEEDS_HANDLING / RETRYING rows are the
+  # replacement for the old archive/error directories and the old in-memory
+  # processedFileHashes set). See openelis-analyzer-bridge PR #34.
+  bridge-state:
