@@ -40,3 +40,5 @@ XPERTMRSA,Molecular Biology,Nasal Swab,35492-8,Y,Y,79,,MRSA Screen,Dépistage SA
 XPERTSA,Molecular Biology,Wound Swab,94512-1,Y,Y,80,,S. aureus,S. aureus,,
 XPERTTV,Molecular Biology,Vaginal Swab|Urine,69937-1,Y,Y,81,,Trichomonas vaginalis,Trichomonas vaginalis,,
 XPERTVAN,Molecular Biology,Rectal Swab,62261-3,Y,Y,82,,Vancomycin Resistance,Résistance Vancomycine,,
+TSH,Biochemistry,Serum|Plasma,11580-8,Y,Y,60,mIU/L,TSH (Thyroid Stimulating Hormone),TSH (Thyréostimuline),,
+β-hCG,Biochemistry,Serum|Plasma,21198-7,Y,Y,61,mIU/mL,β-hCG (Beta-HCG),β-hCG (Bêta-HCG),,
