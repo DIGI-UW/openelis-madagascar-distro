@@ -6,9 +6,20 @@
 #   ./scripts/restart-stack.sh --clean             # restart, wipe DB + volumes
 #   ./scripts/restart-stack.sh --rebuild           # rebuild all images first
 #   ./scripts/restart-stack.sh --clean --rebuild   # full reset: rebuild + wipe + restart
+#   ./scripts/restart-stack.sh --clean --seed-harness  # also run the analyzer harness seed
 #
 # --rebuild builds webapp, frontend, and demo-tests from local source.
 # Requires OE_REPO env var or ../OpenELIS-Global-2 to exist.
+#
+# --seed-harness runs $OE_REPO/projects/analyzer-harness/seed-analyzers.sh
+# against the running stack — creates the 7 pre-seeded non-Demo analyzers
+# (FluoroCycler XT, Wondfo Finecare FS-205, QuantStudio 5/7, Tecan Infinite
+# F50, Thermo Multiskan FC, Cepheid GeneXpert (ASTM Mode)) via REST API.
+# This matches what CI's `23_Seed analyzers via REST API` step does, so
+# the file-import-results.spec.ts tests (which look up pre-seeded analyzers
+# by name) can run locally. Requires OE_REPO. Only runs AFTER the v5 §5
+# invariant check — REST API seeding is a valid user action; Liquibase
+# seeding would be a violation.
 #
 # Robustness:
 # - `compose down` is wrapped in `timeout 60` with `-t 5 --remove-orphans`
@@ -31,12 +42,14 @@ COMPOSE="docker compose \
 
 CLEAN_FLAG=""
 REBUILD_FLAG=""
+SEED_HARNESS_FLAG=""
 OE_REPO="${OE_REPO:-$(realpath "$ROOT/../../OpenELIS-Global-2" 2>/dev/null || echo "")}"
 
 for arg in "$@"; do
   case "$arg" in
     --clean) CLEAN_FLAG="-v"; echo "[mode] --clean: volumes will be wiped";;
     --rebuild) REBUILD_FLAG="yes"; echo "[mode] --rebuild: local images will be built";;
+    --seed-harness) SEED_HARNESS_FLAG="yes"; echo "[mode] --seed-harness: seed 7 harness analyzers via REST API (CI parity)";;
   esac
 done
 if [[ -z "$CLEAN_FLAG" && -z "$REBUILD_FLAG" ]]; then
@@ -177,6 +190,27 @@ if [[ -n "$CLEAN_FLAG" ]]; then
   else
     echo "    DB container not running — skipping invariant check"
   fi
+fi
+
+# Optional harness seed (CI parity). Runs AFTER the v5 §5 invariant — these
+# rows come from REST API calls (user-level action), not Liquibase.
+if [[ -n "$SEED_HARNESS_FLAG" ]]; then
+  echo "[8/8] Seeding harness analyzers via REST API (matches CI step 23)..."
+  if [[ -z "$OE_REPO" || ! -d "$OE_REPO" ]]; then
+    echo "    ERROR: --seed-harness requires OE_REPO env var or ../OpenELIS-Global-2 to exist"
+    echo "    Set: export OE_REPO=/path/to/OpenELIS-Global-2"
+    exit 1
+  fi
+  SEED_SCRIPT="$OE_REPO/projects/analyzer-harness/seed-analyzers.sh"
+  if [[ ! -x "$SEED_SCRIPT" ]]; then
+    echo "    ERROR: seed script not executable or missing: $SEED_SCRIPT"
+    exit 1
+  fi
+  BASE_URL="${BASE_URL:-https://localhost}" \
+  TEST_USER="${TEST_USER:-admin}" \
+  TEST_PASS="${TEST_PASS:-adminADMIN!}" \
+    bash "$SEED_SCRIPT"
+  echo "    Harness analyzers seeded."
 fi
 
 echo "done"
