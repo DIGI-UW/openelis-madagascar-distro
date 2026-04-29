@@ -28,31 +28,31 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
           echo "Release tag: ${TAG_NAME}"
 
-      - name: Update docker-compose.yml to use release tags
+      - name: Update compose.yaml to use release tags
         run: |
           RELEASE_TAG="${{ steps.release_tag.outputs.TAG_NAME }}"
           # Update all :develop tags to the release tag
-          sed -i.bak "s/:develop/:${RELEASE_TAG}/g" docker-compose.yml
-          rm docker-compose.yml.bak
-          echo "Updated docker-compose.yml with release tag: ${RELEASE_TAG}"
+          sed -i.bak "s/:develop/:${RELEASE_TAG}/g" compose.yaml
+          rm compose.yaml.bak
+          echo "Updated compose.yaml with release tag: ${RELEASE_TAG}"
           # Show the changes
-          git diff docker-compose.yml || true
+          git diff compose.yaml || true
 
       - name: Commit and update release tag
         run: |
           RELEASE_TAG="${{ steps.release_tag.outputs.TAG_NAME }}"
           
-          git add docker-compose.yml
+          git add compose.yaml
           if ! git diff --staged --quiet; then
-            # Create a new commit with updated docker-compose.yml
+            # Create a new commit with updated compose.yaml
             git commit -m "chore: update image tags to ${RELEASE_TAG} for release"
             
             # Update the tag to point to the new commit
             git tag -f ${RELEASE_TAG}
             git push origin ${RELEASE_TAG} --force
-            echo "Updated release tag ${RELEASE_TAG} with docker-compose.yml changes"
+            echo "Updated release tag ${RELEASE_TAG} with compose.yaml changes"
           else
-            echo "No changes to commit (docker-compose.yml already has release tags)"
+            echo "No changes to commit (compose.yaml already has release tags)"
           fi
 
 

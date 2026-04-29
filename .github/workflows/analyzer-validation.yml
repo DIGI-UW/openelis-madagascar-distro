@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start validation stack
-        run: docker compose -f docker-compose.yml -f docker-compose.validate.yml up -d
+        run: docker compose -f compose.yaml -f compose.validate.yaml up -d
 
       - name: Wait for core services
         run: |
@@ -21,7 +21,7 @@ jobs:
           max_attempts=60
           attempt=1
           while [ "$attempt" -le "$max_attempts" ]; do
-            healthy_count="$(docker compose -f docker-compose.yml -f docker-compose.validate.yml ps --format json | jq -r 'select(.Health == "healthy") | .Service' | wc -l)"
+            healthy_count="$(docker compose -f compose.yaml -f compose.validate.yaml ps --format json | jq -r '.[] | select(.Health == "healthy") | .Service' | wc -l)"
             if [ "$healthy_count" -ge 3 ]; then
               echo "Core services are healthy"
               exit 0
@@ -31,14 +31,14 @@ jobs:
             attempt=$((attempt + 1))
           done
           echo "Timed out waiting for healthy services"
-          docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
+          docker compose -f compose.yaml -f compose.validate.yaml ps
           exit 1
 
       - name: API contract smoke tests
         id: api_contract
         run: |
           set -euo pipefail
-          COMPOSE_PROFILES=demo docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests \
+          COMPOSE_PROFILES=demo docker compose -f compose.yaml -f compose.validate.yaml run --rm demo-tests \
             npx playwright test \
             --project=harness-foundational \
             --config=playwright.config.ts \
@@ -51,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           # Image WORKDIR is /app (see tests/playwright/Dockerfile); do not use npm --prefix tests/playwright.
-          COMPOSE_PROFILES=demo docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests \
+          COMPOSE_PROFILES=demo docker compose -f compose.yaml -f compose.validate.yaml run --rm demo-tests \
             npx playwright test \
             --project=harness-demo \
             --config=playwright.config.ts \
@@ -69,10 +69,10 @@ jobs:
         if: always()
         run: |
           mkdir -p test-artifacts
-          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs openelisglobal-webapp > test-artifacts/openelisglobal-webapp.log || true
-          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs openelis-analyzer-bridge > test-artifacts/openelis-analyzer-bridge.log || true
-          docker compose -f docker-compose.yml -f docker-compose.validate.yml logs analyzer-mock > test-artifacts/analyzer-mock.log || true
-          docker compose -f docker-compose.yml -f docker-compose.validate.yml ps > test-artifacts/compose-ps.txt || true
+          docker compose -f compose.yaml -f compose.validate.yaml logs openelisglobal-webapp > test-artifacts/openelisglobal-webapp.log || true
+          docker compose -f compose.yaml -f compose.validate.yaml logs openelis-analyzer-bridge > test-artifacts/openelis-analyzer-bridge.log || true
+          docker compose -f compose.yaml -f compose.validate.yaml logs analyzer-mock > test-artifacts/analyzer-mock.log || true
+          docker compose -f compose.yaml -f compose.validate.yaml ps > test-artifacts/compose-ps.txt || true
 
       - name: Upload Playwright artifacts
         if: always()
@@ -86,4 +86,4 @@ jobs:
 
       - name: Tear down stack
         if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.validate.yml down -v
+        run: docker compose -f compose.yaml -f compose.validate.yaml down -v
