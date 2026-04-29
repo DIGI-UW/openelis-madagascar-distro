@@ -46,7 +46,7 @@ COMPOSE="docker compose \
 CLEAN_FLAG=""
 REBUILD_FLAG=""
 SEED_HARNESS_FLAG=""
-OE_REPO="${OE_REPO:-$(realpath "$ROOT/../../OpenELIS-Global-2" 2>/dev/null || echo "")}"
+OE_REPO="${OE_REPO:-$(realpath "$ROOT/../OpenELIS-Global-2" 2>/dev/null || echo "")}"
 
 for arg in "$@"; do
   case "$arg" in
@@ -66,16 +66,21 @@ if [[ -n "$REBUILD_FLAG" ]]; then
     exit 1
   fi
   echo "[0/7] Building local images..."
-  echo "  → webapp (backend)..."
+  BUILD_LOG_DIR="/tmp/restart-stack-build"
+  mkdir -p "$BUILD_LOG_DIR"
+  echo "  → webapp (backend)... (full log: $BUILD_LOG_DIR/webapp.log)"
   DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
-    -t itechuw/openelis-global-2:local "$OE_REPO" 2>&1 | tail -1
-  echo "  → frontend..."
+    -t itechuw/openelis-global-2:local "$OE_REPO" 2>&1 \
+    | tee "$BUILD_LOG_DIR/webapp.log" | tail -1
+  echo "  → frontend... (full log: $BUILD_LOG_DIR/frontend.log)"
   DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
     -t itechuw/openelis-global-2-frontend:local \
-    -f "$OE_REPO/frontend/Dockerfile.prod" "$OE_REPO/frontend" 2>&1 | tail -1
-  echo "  → demo-tests..."
+    "$OE_REPO/frontend" 2>&1 \
+    | tee "$BUILD_LOG_DIR/frontend.log" | tail -1
+  echo "  → demo-tests... (full log: $BUILD_LOG_DIR/demo-tests.log)"
   docker build -t madagascar-demo-tests:local \
-    -f "$ROOT/tests/playwright/Dockerfile" "$ROOT/tests/playwright" 2>&1 | tail -1
+    -f "$ROOT/tests/playwright/Dockerfile" "$ROOT/tests/playwright" 2>&1 \
+    | tee "$BUILD_LOG_DIR/demo-tests.log" | tail -1
   echo "  All images built. Compose will use OE_IMAGE_TAG=local."
   export OE_IMAGE_TAG=local
 fi
