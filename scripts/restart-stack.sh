@@ -8,16 +8,20 @@
 #   ./scripts/restart-stack.sh --clean --rebuild   # full reset: rebuild + wipe + restart
 #   ./scripts/restart-stack.sh --clean --seed-harness  # also run the analyzer harness seed
 #
-# Image selection: compose.yaml pins webapp + frontend to `:local` with
-# `build:` directives pointing at $OE_REPO. `docker compose build` (or
-# `up --build`) produces those images from local source; everything else
-# is hardcoded to `:develop` and pulls from the registry. No OE_IMAGE_TAG
-# env var, no .env state — bare `docker compose up -d` from any shell
-# always uses the locally-built webapp/frontend if present, builds them
-# on first up if absent, and pulls the rest from the registry.
+# Image selection: compose.yaml + compose.validate.yaml pin every locally-
+# buildable service to `:local` with native `build:` directives:
+#   - oe.openelis.org (webapp)        → ${OE_REPO:-../OpenELIS-Global-2}
+#   - frontend.openelis.org           → ${OE_REPO:-../OpenELIS-Global-2}/frontend
+#   - openelis-analyzer-bridge        → ${BRIDGE_REPO:-../openelis-analyzer-bridge}
+#   - analyzer-mock                   → ${OE_REPO:-../OpenELIS-Global-2}/tools/analyzer-mock-server
+# Everything else (db, fhir, proxy) is hardcoded to `:develop` and pulled
+# from the registry. No env-var indirection — bare `docker compose up -d`
+# from any shell uses locally-built images if present and builds them
+# on first up if absent.
 #
-# --rebuild forces a fresh build of webapp + frontend (and demo-tests).
-# Requires OE_REPO env var or ../OpenELIS-Global-2 to exist.
+# --rebuild forces a fresh build of all four locally-buildable services
+# (and demo-tests). Requires OE_REPO env var or ../OpenELIS-Global-2 to
+# exist; same for BRIDGE_REPO or ../openelis-analyzer-bridge.
 #
 # --seed-harness runs $OE_REPO/projects/analyzer-harness/seed-analyzers.sh
 # against the running stack — creates the 7 pre-seeded non-Demo analyzers

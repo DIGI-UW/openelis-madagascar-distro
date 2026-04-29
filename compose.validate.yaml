@@ -14,7 +14,9 @@
 
 services:
   analyzer-mock:
-    image: itechuw/astm-mock-server:latest
+    image: itechuw/astm-mock-server:local
+    build:
+      context: ${OE_REPO:-../OpenELIS-Global-2}/tools/analyzer-mock-server
     platform: linux/amd64
     container_name: openelis-analyzer-mock
     ports:
