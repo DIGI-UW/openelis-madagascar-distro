@@ -42,7 +42,7 @@ services:
 
     db.openelis.org:
         container_name: openelisglobal-database
-        image: itechuw/openelis-global-2-database:${OE_IMAGE_TAG:-develop}
+        image: itechuw/openelis-global-2-database:develop
         platform: linux/amd64
         ports:
             - "15432:5432"
@@ -67,7 +67,9 @@ services:
             
     oe.openelis.org:
         container_name: openelisglobal-webapp
-        image: itechuw/openelis-global-2:${OE_IMAGE_TAG:-develop}
+        image: itechuw/openelis-global-2:local
+        build:
+            context: ${OE_REPO:-../OpenELIS-Global-2}
         platform: linux/amd64
         depends_on:
             db.openelis.org:
@@ -92,7 +94,7 @@ services:
         logging: *local-logging      
         environment:
             - DEFAULT_PW=${OE_ADMIN_PASSWORD:-adminADMIN!}
-            - TZ=America/New_York
+            - TZ=Indian/Antananarivo
               # Config variables loaded through Tomacat server.xml
             - CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://db.openelis.org:5432/clinlims -Ddatasource.username=clinlims -Ddatasource.password=${OE_DB_PASSWORD} -Doe.ssl.truststorepath=${SSL_TRUSTSTORE_PATH} -Doe.ssl.truststorepassword=${SSL_TRUSTSTORE_PASSWORD} -Doe.ssl.keystorepath=${SSL_KEYSTORE_PATH} -Doe.ssl.keystorepassword=${SSL_KEYSTORE_PASSWORD}
              # Env variables passed to the common properties file
@@ -126,7 +128,7 @@ services:
             
     fhir.openelis.org:
         container_name: external-fhir-api
-        image: itechuw/openelis-global-2-fhir:${OE_IMAGE_TAG:-develop}
+        image: itechuw/openelis-global-2-fhir:develop
         platform: linux/amd64
         ports:
             - "8081:8080"
@@ -170,7 +172,9 @@ services:
             -  key_trust-store-volume:/etc/openelis-global 
        
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:${OE_IMAGE_TAG:-develop}
+        image: itechuw/openelis-global-2-frontend:local
+        build:
+            context: ${OE_REPO:-../OpenELIS-Global-2}/frontend
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -187,7 +191,7 @@ services:
             start_period: 20s
 
     proxy:
-        image: itechuw/openelis-global-2-proxy:${OE_IMAGE_TAG:-develop}
+        image: itechuw/openelis-global-2-proxy:develop
         container_name: openelisglobal-proxy
         platform: linux/amd64
         ports:

@@ -8,11 +8,15 @@
 #   ./scripts/restart-stack.sh --clean --rebuild   # full reset: rebuild + wipe + restart
 #   ./scripts/restart-stack.sh --clean --seed-harness  # also run the analyzer harness seed
 #
-# Image tag selection: compose.yaml uses ${OE_IMAGE_TAG:-develop} for every
-# OpenELIS image. --rebuild builds local images and exports OE_IMAGE_TAG=local
-# so compose picks them up. Default runs use the published :develop tag.
+# Image selection: compose.yaml pins webapp + frontend to `:local` with
+# `build:` directives pointing at $OE_REPO. `docker compose build` (or
+# `up --build`) produces those images from local source; everything else
+# is hardcoded to `:develop` and pulls from the registry. No OE_IMAGE_TAG
+# env var, no .env state — bare `docker compose up -d` from any shell
+# always uses the locally-built webapp/frontend if present, builds them
+# on first up if absent, and pulls the rest from the registry.
 #
-# --rebuild builds webapp, frontend, and demo-tests from local source.
+# --rebuild forces a fresh build of webapp + frontend (and demo-tests).
 # Requires OE_REPO env var or ../OpenELIS-Global-2 to exist.
 #
 # --seed-harness runs $OE_REPO/projects/analyzer-harness/seed-analyzers.sh
@@ -69,21 +73,14 @@ if [[ -n "$REBUILD_FLAG" ]]; then
   echo "[0/7] Building local images..."
   BUILD_LOG_DIR="/tmp/restart-stack-build"
   mkdir -p "$BUILD_LOG_DIR"
-  echo "  → webapp (backend)... (full log: $BUILD_LOG_DIR/webapp.log)"
-  DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
-    -t itechuw/openelis-global-2:local "$OE_REPO" 2>&1 \
-    | tee "$BUILD_LOG_DIR/webapp.log" | tail -1
-  echo "  → frontend... (full log: $BUILD_LOG_DIR/frontend.log)"
-  DOCKER_BUILDKIT=1 docker build --platform linux/amd64 \
-    -t itechuw/openelis-global-2-frontend:local \
-    "$OE_REPO/frontend" 2>&1 \
-    | tee "$BUILD_LOG_DIR/frontend.log" | tail -1
+  echo "  → webapp + frontend via compose build (full log: $BUILD_LOG_DIR/compose-build.log)"
+  OE_REPO="$OE_REPO" DOCKER_BUILDKIT=1 $COMPOSE build --pull 2>&1 \
+    | tee "$BUILD_LOG_DIR/compose-build.log" | tail -1
   echo "  → demo-tests... (full log: $BUILD_LOG_DIR/demo-tests.log)"
   docker build -t madagascar-demo-tests:local \
     -f "$ROOT/tests/playwright/Dockerfile" "$ROOT/tests/playwright" 2>&1 \
     | tee "$BUILD_LOG_DIR/demo-tests.log" | tail -1
-  echo "  All images built. Compose will use OE_IMAGE_TAG=local."
-  export OE_IMAGE_TAG=local
+  echo "  All images built. compose.yaml pins :local for webapp/frontend."
 fi
 
 echo "[1/6] Stopping stack (compose down -t 5 --remove-orphans, 60s cap)..."
