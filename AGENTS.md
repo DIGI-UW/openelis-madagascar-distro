@@ -10,7 +10,7 @@ system context, including:
 - distro-specific container wiring
 - environment configuration
 - analyzer bridge and mock integration
-- local image overrides
+- image tag selection (`OE_IMAGE_TAG` / `BRIDGE_IMAGE_TAG`)
 - validation overlays
 - Playwright demo and validation runs
 
@@ -57,18 +57,23 @@ the distro.
 
 ## Compose Rules
 
+Filenames follow the modern Compose spec (`compose.yaml`, not `docker-compose.yml`).
+
 Base stack:
-- `docker-compose.yml`
+- `compose.yaml`
 
 Analyzer validation overlay:
-- `docker-compose.validate.yml`
-
-Local image override:
-- `docker-compose.local-images.yml`
+- `compose.validate.yaml`
 
 Public TLS (Let's Encrypt, optional):
-- `docker-compose.letsencrypt.yml` — proxy reads `/etc/letsencrypt` and uses `configs/nginx/docker-entrypoint.sh`
+- `compose.letsencrypt.yaml` — proxy reads `/etc/letsencrypt` and uses `configs/nginx/docker-entrypoint.sh`
 - `docs/letsencrypt.md` — issuance, dry-run, and renewal
+
+Image tag selection:
+- All OpenELIS images use `${OE_IMAGE_TAG:-develop}`. The bridge uses `${BRIDGE_IMAGE_TAG:-develop}`.
+- Default runs use the published `:develop` tag.
+- For local builds, run `./scripts/restart-stack.sh --rebuild` (auto-builds + sets `OE_IMAGE_TAG=local`) or export `OE_IMAGE_TAG=local` manually.
+- There is **no** `local-images.yml` overlay — the env var replaces it.
 
 For local analyzer validation, prefer the restart script which uses all layers
 and waits for health:
@@ -76,22 +81,18 @@ and waits for health:
 ```bash
 ./scripts/restart-stack.sh          # restart, keep data
 ./scripts/restart-stack.sh --clean  # restart, remove volumes (DB, certs, indexes)
+./scripts/restart-stack.sh --rebuild # build :local images first, then restart
 ```
 
 Or manually with all layers:
 
 ```bash
 docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
-  -f docker-compose.local-images.yml \
-  -f docker-compose.letsencrypt.yml \
+  -f compose.yaml \
+  -f compose.validate.yaml \
+  -f compose.letsencrypt.yaml \
   up -d
 ```
-
-Do not assume `docker-compose.local-images.yml` alone is enough for analyzer
-validation. Without the validate overlay, services such as the published mock
-health port may not be available on the host.
 
 After rebuilding local images, do not assume `docker compose up -d` will
 recreate containers. Use `--force-recreate` for the affected services.
@@ -141,14 +142,13 @@ For analyzer E2E bring-up, prefer:
 
 ```bash
 docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
-  -f docker-compose.local-images.yml \
+  -f compose.yaml \
+  -f compose.validate.yaml \
   up -d
 ```
 
-Omit `-f docker-compose.local-images.yml` when validating published images
-instead of local builds.
+Set `OE_IMAGE_TAG=local` to validate locally-built images; omit it (default
+`develop`) for published-image validation.
 
 Hard rule:
 - Never treat deleting `configs/database/data2` as a generic safe database reset.

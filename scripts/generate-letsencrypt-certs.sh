@@ -54,7 +54,7 @@ done
 
 mkdir -p ./volume/letsencrypt ./volume/nginx/certbot
 
-DOMAINS_INPUT="${LETSENCRYPT_DOMAINS:-${LETSENCRYPT_DOMAIN:-madagascar.openelis-global.org}}"
+DOMAINS_INPUT="${LETSENCRYPT_DOMAINS:-${LETSENCRYPT_DOMAIN:-mgtest.openelis-global.org}}"
 DOMAINS_INPUT="${DOMAINS_INPUT//,/ }"
 read -r -a RAW_DOMAINS <<<"$DOMAINS_INPUT"
 if [ "${#RAW_DOMAINS[@]}" -eq 0 ]; then
@@ -86,7 +86,7 @@ fi
 
 if ! docker ps --format '{{.Names}}' | grep -q '^openelisglobal-proxy$'; then
     echo "ERROR: Container openelisglobal-proxy must be running (ACME HTTP-01)." >&2
-    echo "Start the stack first, e.g. docker compose -f docker-compose.yml up -d proxy" >&2
+    echo "Start the stack first, e.g. docker compose -f compose.yaml up -d proxy" >&2
     exit 1
 fi
 
@@ -174,4 +174,4 @@ fi
 
 echo ""
 echo "Next: recreate or restart proxy with the Let's Encrypt overlay so nginx loads certs:"
-echo "  docker compose -f docker-compose.yml -f docker-compose.letsencrypt.yml up -d --force-recreate proxy"
+echo "  docker compose -f compose.yaml -f compose.letsencrypt.yaml up -d --force-recreate proxy"

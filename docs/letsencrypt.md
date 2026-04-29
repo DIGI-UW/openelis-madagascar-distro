@@ -12,9 +12,9 @@ Upstream reference: `../OpenELIS-Global-2/docs/LETSENCRYPT_SETUP.md` and
 
 - DNS `A` (or equivalent) for each requested hostname → this host’s public IP.
 - **TCP 80** reachable from the internet (Let’s Encrypt validation).
-- Base stack already mounts `./volume/nginx/certbot` for the ACME webroot (`docker-compose.yml`).
+- Base stack already mounts `./volume/nginx/certbot` for the ACME webroot (`compose.yaml`).
 - If you added the certbot mount after the proxy was first created, **recreate** the proxy so the mount appears inside the container:  
-  `docker compose -f docker-compose.yml up -d --force-recreate proxy`  
+  `docker compose -f compose.yaml up -d --force-recreate proxy`  
   (Otherwise `/var/www/certbot` is missing in the container and validation returns 404 or redirects.)
 
 ## Bring-up
@@ -22,7 +22,7 @@ Upstream reference: `../OpenELIS-Global-2/docs/LETSENCRYPT_SETUP.md` and
 1. Start the stack (proxy must be running):
 
    ```bash
-   docker compose -f docker-compose.yml up -d
+   docker compose -f compose.yaml up -d
    ```
 
 2. **Quota-safe check** (recommended before real issuance):
@@ -44,7 +44,7 @@ Upstream reference: `../OpenELIS-Global-2/docs/LETSENCRYPT_SETUP.md` and
    `/etc/letsencrypt/live/$LETSENCRYPT_DOMAIN/` and symlink into the paths nginx uses:
 
    ```bash
-   docker compose -f docker-compose.yml -f docker-compose.letsencrypt.yml up -d --force-recreate proxy
+   docker compose -f compose.yaml -f compose.letsencrypt.yaml up -d --force-recreate proxy
    ```
 
    Set the env vars below in Compose or your shell before running the script.
@@ -82,7 +82,7 @@ that name; wildcard issuance requires DNS-01 and is out of scope for this HTTP-0
 
 ## Verification checklist
 
-After issuance and `docker compose ... --force-recreate proxy` with `docker-compose.letsencrypt.yml`:
+After issuance and `docker compose ... --force-recreate proxy` with `compose.letsencrypt.yaml`:
 
 ```bash
 curl -I "http://madagascar.openelis-global.org"

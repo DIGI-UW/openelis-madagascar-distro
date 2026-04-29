@@ -8,6 +8,10 @@
 #   ./scripts/restart-stack.sh --clean --rebuild   # full reset: rebuild + wipe + restart
 #   ./scripts/restart-stack.sh --clean --seed-harness  # also run the analyzer harness seed
 #
+# Image tag selection: compose.yaml uses ${OE_IMAGE_TAG:-develop} for every
+# OpenELIS image. --rebuild builds local images and exports OE_IMAGE_TAG=local
+# so compose picks them up. Default runs use the published :develop tag.
+#
 # --rebuild builds webapp, frontend, and demo-tests from local source.
 # Requires OE_REPO env var or ../OpenELIS-Global-2 to exist.
 #
@@ -35,10 +39,9 @@ cd "$ROOT"
 
 PROJECT_LABEL="com.docker.compose.project=openelis-madagascar-distro"
 COMPOSE="docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
-  -f docker-compose.local-images.yml \
-  -f docker-compose.letsencrypt.yml"
+  -f compose.yaml \
+  -f compose.validate.yaml \
+  -f compose.letsencrypt.yaml"
 
 CLEAN_FLAG=""
 REBUILD_FLAG=""
@@ -73,7 +76,8 @@ if [[ -n "$REBUILD_FLAG" ]]; then
   echo "  → demo-tests..."
   docker build -t madagascar-demo-tests:local \
     -f "$ROOT/tests/playwright/Dockerfile" "$ROOT/tests/playwright" 2>&1 | tail -1
-  echo "  All images built."
+  echo "  All images built. Compose will use OE_IMAGE_TAG=local."
+  export OE_IMAGE_TAG=local
 fi
 
 echo "[1/6] Stopping stack (compose down -t 5 --remove-orphans, 60s cap)..."

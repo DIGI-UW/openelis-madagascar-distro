@@ -3,8 +3,10 @@
 .env.local
 .env.*.local
 
-# Local compose overrides (machine-specific paths; see docs/validation.md)
-docker-compose.local-images.yml
+# Local compose overrides (auto-loaded by Docker Compose if present;
+# machine-specific paths; see docs/validation.md).
+compose.override.yaml
+compose.override.yml
 docker-compose.override.yml
 
 # Database bind mounts and local OE config overrides

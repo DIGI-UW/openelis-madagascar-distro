@@ -77,18 +77,19 @@ Published-image validation:
 
 ```bash
 docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
+  -f compose.yaml \
+  -f compose.validate.yaml \
   up -d
 ```
 
-Local-image validation:
+Local-image validation (build, then run with `OE_IMAGE_TAG=local`):
 
 ```bash
-docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
-  -f docker-compose.local-images.yml \
+./scripts/restart-stack.sh --rebuild
+# or, manually:
+OE_IMAGE_TAG=local docker compose \
+  -f compose.yaml \
+  -f compose.validate.yaml \
   up -d --force-recreate
 ```
 
@@ -96,10 +97,9 @@ If only some local-image services changed, recreate the affected services
 explicitly:
 
 ```bash
-docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
-  -f docker-compose.local-images.yml \
+OE_IMAGE_TAG=local docker compose \
+  -f compose.yaml \
+  -f compose.validate.yaml \
   up -d --force-recreate \
   oe.openelis.org frontend.openelis.org openelis-analyzer-bridge analyzer-mock
 ```
@@ -111,7 +111,7 @@ Do not rely on `docker ps` alone.
 Check compose state:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
+docker compose -f compose.yaml -f compose.validate.yaml ps
 ```
 
 Check OE:
@@ -186,8 +186,8 @@ Dockerized demo runner:
 
 ```bash
 COMPOSE_PROFILES=demo docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.validate.yml \
+  -f compose.yaml \
+  -f compose.validate.yaml \
   run --rm demo-tests
 ```
 

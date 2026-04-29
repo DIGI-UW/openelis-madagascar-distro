@@ -1,7 +1,7 @@
 # Let's Encrypt overlay for the reverse proxy.
 # Usage:
-#   docker compose -f docker-compose.yml -f docker-compose.letsencrypt.yml up -d
-#   # (add other overlays as needed, e.g. -f docker-compose.validate.yml)
+#   docker compose -f compose.yaml -f compose.letsencrypt.yaml up -d
+#   # (add other overlays as needed, e.g. -f compose.validate.yaml)
 #
 # Certificates: run ./scripts/generate-letsencrypt-certs.sh from repo root after proxy is up.
 # Env: LETSENCRYPT_EMAIL (required), LETSENCRYPT_DOMAINS / LETSENCRYPT_PRIMARY_DOMAIN / LETSENCRYPT_CERT_NAME
@@ -18,7 +18,7 @@ services:
             - ./volume/letsencrypt:/etc/letsencrypt:ro
             - ./configs/nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
         environment:
-            - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS:-madagascar.openelis-global.org,mgtest.openelis-global.org}
-            - LETSENCRYPT_PRIMARY_DOMAIN=${LETSENCRYPT_PRIMARY_DOMAIN:-madagascar.openelis-global.org}
-            - LETSENCRYPT_CERT_NAME=${LETSENCRYPT_CERT_NAME:-madagascar.openelis-global.org}
+            - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS:-mgtest.openelis-global.org}
+            - LETSENCRYPT_PRIMARY_DOMAIN=${LETSENCRYPT_PRIMARY_DOMAIN:-mgtest.openelis-global.org}
+            - LETSENCRYPT_CERT_NAME=${LETSENCRYPT_CERT_NAME:-mgtest.openelis-global.org}
         entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]

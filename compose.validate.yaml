@@ -2,13 +2,13 @@
 # Published images only; no upstream source checkout required at runtime.
 #
 # Bring up stack + mock:
-#   docker compose -f docker-compose.yml -f docker-compose.validate.yml up -d
+#   docker compose -f compose.yaml -f compose.validate.yaml up -d
 #
 # Run demo tests (10 Madagascar flows):
-#   docker compose -f docker-compose.yml -f docker-compose.validate.yml run --rm demo-tests
+#   docker compose -f compose.yaml -f compose.validate.yaml run --rm demo-tests
 #
 # Readiness:
-#   docker compose -f docker-compose.yml -f docker-compose.validate.yml ps
+#   docker compose -f compose.yaml -f compose.validate.yaml ps
 #   curl -k -sSf https://localhost:8442/actuator/health
 #   curl -sSf http://localhost:8085/health
 
@@ -114,7 +114,7 @@ services:
       - ./test-results:/app/test-results
       # Host filesystem for real analyzer file drops — read-only, matches
       # the same env-var-driven bind mount on webapp + bridge from Phase 1
-      # (docker-compose.yml:115 + :219). On UAT: ANALYZER_HOST_MOUNT=/mnt
+      # (compose.yaml). On UAT: ANALYZER_HOST_MOUNT=/mnt
       # (default). On dev: export ANALYZER_HOST_MOUNT=/home/you/OpenELIS-Global-2/docs/debug-local/mnt-snapshot
       # Playwright tests read from ${ANALYZER_HOST_MOUNT:-/mnt}/la2m/central/analyzers_results/...
       # for the drop-real-analyzer-file helper (plan mellow-honking-cascade §2.5c/§2.5d).
