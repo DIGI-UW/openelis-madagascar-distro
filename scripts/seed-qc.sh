@@ -136,9 +136,7 @@ esac
 rm -f "$LOT_LOG"
 
 echo "[seed-qc] Done. Drive QC violations with:"
-echo "  docker exec openelis-analyzer-mock python3 /app/server.py \\"
-echo "    --qc --qc-deviation 3.5 \\"
-echo "    --template genexpert_astm \\"
-echo "    --push tcp://openelis-analyzer-bridge:12001 \\"
-echo "    --source-ip 10.42.20.10"
+echo "  curl -X POST http://localhost:8085/simulate/astm/genexpert_astm \\"
+echo "    -H 'Content-Type: application/json' \\"
+echo "    -d '{\"destination\":\"tcp://openelis-analyzer-bridge:12001\",\"qc\":true,\"qc_deviation\":3.5,\"source_ip\":\"10.42.20.10\"}'"
 echo "  → fires 1₃ₛ rejection (z-score=3.5) → qc_alert row → visible in /analyzers/qc/db"
