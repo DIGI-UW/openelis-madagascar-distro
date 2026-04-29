@@ -197,12 +197,14 @@ def convert(input_path: Path, output_path: Path, assay_name: str = "FluoroType H
         if calc_conc is not None:
             ws_out.cell(row=row_out, column=8, value=calc_conc)
             ws_out.cell(row=row_out, column=9, value=calc_unit)
-        elif "< LOQ" in calc_conc_raw:
+        loq_note: str | None = None
+        if calc_conc is None and "< LOQ" in calc_conc_raw:
             ws_out.cell(row=row_out, column=7, value=interp or "Detected")
-            ws_out.cell(row=row_out, column=12, value="Below LOQ")
-        elif "> LOQ" in calc_conc_raw:
-            ws_out.cell(row=row_out, column=12, value="Above LOQ")
-        ws_out.cell(row=row_out, column=12, value=notes if notes else None)
+            loq_note = "Below LOQ"
+        elif calc_conc is None and "> LOQ" in calc_conc_raw:
+            loq_note = "Above LOQ"
+        merged_notes = " | ".join(filter(None, [loq_note, notes])) or None
+        ws_out.cell(row=row_out, column=12, value=merged_notes)
         ws_out.cell(row=row_out, column=13, value=sample_type)
 
         stats["total"] += 1

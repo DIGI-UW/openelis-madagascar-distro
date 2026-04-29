@@ -100,8 +100,11 @@ def classify_sample(sample_id, default_test_code):
     if s_upper.startswith("PC"):
         return s, f"QC_{default_test_code}_POS"
     # Patient: ASCII-normalize Échantillon → SAMPLE, keep trailing digits.
-    if s.startswith("Échantillon") or s.startswith("Echantillon"):
-        digits = s.lstrip("Échantilon").lstrip("Echantilon").lstrip()
+    if s.startswith("Échantillon"):
+        digits = s.removeprefix("Échantillon").lstrip()
+        return f"SAMPLE{digits}" if digits else s, default_test_code
+    if s.startswith("Echantillon"):
+        digits = s.removeprefix("Echantillon").lstrip()
         return f"SAMPLE{digits}" if digits else s, default_test_code
     return s, default_test_code
 

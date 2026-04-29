@@ -31,8 +31,9 @@
 #   the whole script indefinitely.
 # - If compose down hangs or fails, falls back to direct
 #   `docker rm -f` on project-labeled containers.
-# - Readiness is judged by login-form render, not /health 200 (a 200 on
-#   /health doesn't mean the webapp is actually serving requests).
+# - Readiness requires both /health 200 AND ValidateLogin success.
+#   /health alone routes through the proxy to the frontend container, so a
+#   200 there doesn't prove the backend is up. ValidateLogin proves it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"

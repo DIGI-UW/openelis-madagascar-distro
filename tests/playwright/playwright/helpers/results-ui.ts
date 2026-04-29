@@ -399,8 +399,9 @@ export async function expectResultVisible(
   resultValue: string,
 ): Promise<void> {
   for (const candidate of resultValueSearchVariants(resultValue)) {
+    const escaped = candidate.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
     const inputResult = resultsRegion
-      .locator(`input[value*="${candidate}"]`)
+      .locator(`input[value*="${escaped}"]`)
       .first();
     try {
       await expect(inputResult).toBeVisible({ timeout: SHORT_TIMEOUT });

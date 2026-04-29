@@ -13,7 +13,7 @@ org:
         uri: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
         username: admin
         password: adminADMIN!
-        healthUri: https://openelisglobal-webapp:8443/api/OpenELIS-Global/health
+        healthUri: https://openelisglobal-webapp:8443/OpenELIS-Global/health
         healthMethod: GET
 management:
   health:
