@@ -47,6 +47,36 @@
       ]
     },
      {
+      "elementId": "menu_storage",
+      "childMenus": [ 
+        {
+          "elementId": "menu_storage_management",
+          "childMenus": ["*"]
+        },
+        {
+          "elementId": "menu_freezer_monitoring",
+          "childMenus": ["*"]
+        }
+      ]
+    },
+     {
+      "elementId": "menu_sample_shipment",
+      "childMenus": ["*"]
+    },
+    
+     {
+      "elementId": "menu_eqa_tests",
+      "childMenus": ["*"]
+    },
+     {
+      "elementId": "menu_eqa_mgmt",
+      "childMenus": ["*"]
+    },
+     {
+      "elementId": "menu_alerts_standalone",
+      "childMenus": ["*"]
+    },
+     {
       "elementId": "menu_analyzers",
       "childMenus": [
         {
@@ -60,25 +90,16 @@
         {
           "elementId": "menu_analyzers_types",
           "childMenus": []
+        },
+        {
+          "elementId": "menu_analyzers_qc",
+          "childMenus": ["*"]
         }
       ]
     },
     {
       "elementId": "menu_nonconformity",
-      "childMenus": [
-        {
-          "elementId": "menu_non_conforming_report",
-          "childMenus": []
-        },
-        {
-          "elementId": "menu_non_conforming_view",
-          "childMenus": []
-        },
-        {
-          "elementId": "menu_non_conforming_corrective_actions",
-          "childMenus": []
-        }
-      ]
+      "childMenus": ["*"]
     },
     {
       "elementId": "menu_workplan",
@@ -242,6 +263,10 @@
               "childMenus": []
             }
           ]
+        },
+        {
+          "elementId": "menu_reports_audittrail",
+          "childMenus": ["*"]
         }
       ]
     },
