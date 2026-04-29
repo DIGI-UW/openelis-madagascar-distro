@@ -218,6 +218,21 @@ if [[ -n "$SEED_HARNESS_FLAG" ]]; then
   TEST_PASS="${TEST_PASS:-adminADMIN!}" \
     bash "$SEED_SCRIPT"
   echo "    Harness analyzers seeded."
+
+  # Distro-specific QC seeding (Westgard preset + control lot for HIV-VL on
+  # GeneXpert). Lives in the distro because the values (target=1250.0,
+  # SD=125.0, lot=LOT-HIVVL-N) are Madagascar-deployment-specific — they
+  # don't belong in upstream OE's generic harness script. Idempotent.
+  echo "[8b/8] Seeding distro QC config..."
+  QC_SEED_SCRIPT="$ROOT/scripts/seed-qc.sh"
+  if [[ -x "$QC_SEED_SCRIPT" ]]; then
+    BASE_URL="${BASE_URL:-https://localhost}" \
+    TEST_USER="${TEST_USER:-admin}" \
+    TEST_PASS="${TEST_PASS:-adminADMIN!}" \
+      bash "$QC_SEED_SCRIPT" --no-clean
+  else
+    echo "    WARN: seed-qc.sh not found or not executable at $QC_SEED_SCRIPT"
+  fi
 fi
 
 echo "done"
