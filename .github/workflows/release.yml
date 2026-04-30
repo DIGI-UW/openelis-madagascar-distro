@@ -17,27 +17,15 @@ jobs:
         with:
           fetch-depth: 0   # need history for `git describe` and `git archive`
 
-      - name: Determine ref name + tag flag
-        id: ref
+      - name: Build tarball
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          REF_NAME="${GITHUB_REF_NAME//\//-}"
-          echo "name=${REF_NAME}" >> "$GITHUB_OUTPUT"
-          echo "is_tag=${{ startsWith(github.ref, 'refs/tags/') }}" >> "$GITHUB_OUTPUT"
-
-      - name: Build tarball (git archive — same shape as GitHub auto-archive)
-        run: |
-          WRAP_DIR="openelis-madagascar-distro-${{ steps.ref.outputs.name }}"
-          TARBALL="${WRAP_DIR}.tar.gz"
-          git archive --format=tar.gz \
-            --prefix="${WRAP_DIR}/" \
-            --output="${TARBALL}" \
-            HEAD
-          echo "TARBALL=${TARBALL}" >> "$GITHUB_ENV"
-          ls -lh "${TARBALL}"
-          tar tzf "${TARBALL}" | wc -l
+          ./scripts/build-tarball.sh
+          echo "TARBALL=openelis-madagascar-distro-${REF_NAME//\//-}.tar.gz" >> "$GITHUB_ENV"
 
       - name: Upload workflow artifact (main pushes)
-        if: steps.ref.outputs.is_tag != 'true'
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARBALL }}
@@ -45,7 +33,7 @@ jobs:
           retention-days: 90
 
       - name: Attach to GitHub Release (tag pushes)
-        if: steps.ref.outputs.is_tag == 'true'
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.TARBALL }}

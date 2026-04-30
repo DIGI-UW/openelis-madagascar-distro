@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Locally-built release tarballs (scripts/build-tarball.sh output).
+openelis-madagascar-distro-*.tar.gz
+
 # Local compose overrides (auto-loaded by Docker Compose if present;
 # machine-specific paths; see docs/validation.md).
 compose.override.yaml
