@@ -1,46 +1,62 @@
-## OpenELIS Docker Compose Distribution Setup for Magadascar
-Docker Compose setup for OpenELIS-Global2
+# openelis-madagascar-distro
 
-You can find more information on how to set up OpenELIS at our [docs page](http://docs.openelis-global.org/)
+OpenELIS Global deployment package for Madagascar — Docker Compose stack
+with the Madagascar configuration profile, analyzer bridge, and lab-data
+converters bundled.
 
-[![Build Status](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/ci.yml/badge.svg)](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/ci.yml)
+This repo IS the deployment artifact: every tagged release is consumable
+as a [GitHub auto-archive](https://github.com/DIGI-UW/openelis-madagascar-distro/releases),
+a `git clone --branch <tag>`, or a downloaded Release tarball. Ozone-style
+consumers and direct implementers all use the same versioned tag.
 
-[![Publish Docker Image Status](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/publish-and-test.yml/badge.svg)](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/publish-and-test.yml)
+## Quickstart (localhost demo)
 
-[![Build Off Line Docker Images](https://github.com/I-TECH-UW/openelis-docker/actions/workflows/build-installer.yml/badge.svg)](https://github.com/I-TECH-UW/openelis-docker/actions/workflows/build-installer.yml)
+```bash
+git clone https://github.com/DIGI-UW/openelis-madagascar-distro
+cd openelis-madagascar-distro
+docker compose up -d
+```
 
-## ONLINE INSTALLATION
+Then open https://localhost/ in your browser:
 
-## Updating the DB Passord (Optional)
-1. Update the Enviroment vaiable `OE_DB_PASSWORD` in the [.env](./.env) file for the 'clinlims' user
+| URL | Credentials |
+|---|---|
+| https://localhost/ | `admin` / `adminADMIN!` |
 
-1. Update the Enviroment vaiable `ADMIN_PASSWORD` in the [.env](./.env) file for the 'admin' user
+The default `.env` ships demo credentials (`ADMIN_PASSWORD=superuser`,
+`OE_DB_PASSWORD=clinlims`) suitable for localhost evaluation. Change
+these before any non-localhost deployment.
 
-### Running OpenELIS Global with docker-compose
-    docker compose up -d
+## Production deployment
 
-#### The Instance can be accessed at 
+| Topic | Pointer |
+|---|---|
+| Let's Encrypt TLS for a public hostname | [docs/letsencrypt.md](docs/letsencrypt.md) |
+| Resetting the database between runs | [docs/database-reset.md](docs/database-reset.md) |
+| Deploying / restarting the analyzer bridge | [docs/analyzer-bridge-deploy-runbook.md](docs/analyzer-bridge-deploy-runbook.md) |
+| Permission errors on `configs/` | `./scripts/fix-config-permissions.sh` |
 
-| Instance  |     URL       | credentials (user: password)|
-|---------- |:-------------:|------:                       |
-| OpenELIS Frontend  |    https://localhost/  |  admin: adminADMIN!
+The Let's Encrypt overlay reads `LETSENCRYPT_*` vars from
+`.env.letsencrypt` (start from `.env.letsencrypt.example`), plus the base
+`.env`. See `docs/letsencrypt.md` for the full walkthrough.
 
-### HTTPS (public hostname, Let's Encrypt)
+## Lab-data utilities
 
-Optional overlay `compose.letsencrypt.yaml` and `scripts/generate-letsencrypt-certs.sh` enable
-trusted TLS for one or more public hostnames (HTTP-01). The hostname list is configurable through
-Compose env vars such as `LETSENCRYPT_DOMAINS`, `LETSENCRYPT_PRIMARY_DOMAIN`, and `LETSENCRYPT_CERT_NAME`.
-See [`docs/letsencrypt.md`](./docs/letsencrypt.md).
+`scripts/convert-*.py` are one-shot converters for analyzer file formats
+shipped with this distro:
 
-### Analyzer bridge and validation
+- `convert-fluorocycler-legacy.py` — FluoroCycler XT legacy export → ASTM
+- `convert-multiskan-skanit.py` — Thermo Multiskan SkanIt → ASTM
+- `convert-tecan-magellan.py` — Tecan Magellan → ASTM
 
-- **`ANALYZER_BRIDGE_URL`** is set on the webapp so OpenELIS can register analyzers with the bridge (`compose.yaml`).
-- Bridge forward URL uses the CI-style base **`/OpenELIS-Global/analyzer`** (see `configs/astm/configuration.yml` and bridge env).
-- **`compose.validate.yaml`** adds analyzer mock wiring plus a local `demo-tests` runner for the 10 Madagascar demo Playwright flows (enable with Compose profile **`demo`**; see `docs/validation.md`).
-- **`docs/validation.md`** documents the self-contained bring-up + demo test flow.
-- If startup logs show **permission denied** writing checksums under `configs/configuration/backend/`, run once: `./scripts/fix-config-permissions.sh`
-- Compose merge check: `./scripts/validate-compose.sh`
+Run with `python3 scripts/convert-<analyzer>.py --help` for usage.
 
-       
-    
+## Developing or testing this distro
 
+The dev workspace, Playwright E2E tests, build overlays, and dev
+orchestration scripts live in the sibling
+[openelis-madagascar-test-harness][harness] repo. The harness consumes
+this distro at a tag (or as a sibling clone) and adds a mock analyzer +
+test runner on top.
+
+[harness]: https://github.com/DIGI-UW/openelis-madagascar-test-harness
