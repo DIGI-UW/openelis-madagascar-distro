@@ -267,11 +267,19 @@
         {
           "elementId": "menu_reports_audittrail",
           "childMenus": ["*"]
+        },
+        {
+          "elementId": "menu_reports_tatreport",
+          "childMenus": []
         }
       ]
     },
     {
       "elementId": "menu_administration",
+      "childMenus": []
+    },
+    {
+      "elementId": "menu_aliquot",
       "childMenus": []
     },
     {
