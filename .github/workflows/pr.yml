@@ -6,10 +6,12 @@ on:
     branches: [main]
 
 jobs:
-  compose-validate:
+  compose-config:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate Docker Compose merge
-        run: ./scripts/validate-compose.sh
+      - name: Validate compose syntax + path resolution
+        run: |
+          docker compose -f compose.yaml config > /dev/null
+          docker compose -f compose.yaml -f compose.letsencrypt.yaml config > /dev/null

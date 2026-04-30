@@ -1,0 +1,45 @@
+name: Release tarball
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  tarball:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine ref name
+        id: ref
+        run: |
+          REF_NAME="${GITHUB_REF_NAME//\//-}"
+          echo "name=${REF_NAME}" >> "$GITHUB_OUTPUT"
+          echo "is_tag=${{ startsWith(github.ref, 'refs/tags/') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build tarball
+        run: |
+          TARBALL="openelis-madagascar-distro-${{ steps.ref.outputs.name }}.tar.gz"
+          tar --exclude='.git' -czf "/tmp/${TARBALL}" .
+          mv "/tmp/${TARBALL}" "${TARBALL}"
+          echo "TARBALL=${TARBALL}" >> "$GITHUB_ENV"
+          ls -lh "${TARBALL}"
+
+      - name: Upload workflow artifact (main pushes)
+        if: steps.ref.outputs.is_tag != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TARBALL }}
+          path: ${{ env.TARBALL }}
+          retention-days: 90
+
+      - name: Attach to GitHub Release (tag pushes)
+        if: steps.ref.outputs.is_tag == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.TARBALL }}
