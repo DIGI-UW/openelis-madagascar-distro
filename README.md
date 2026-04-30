@@ -27,6 +27,33 @@ The default `.env` ships demo credentials (`ADMIN_PASSWORD=superuser`,
 `OE_DB_PASSWORD=clinlims`) suitable for localhost evaluation. Change
 these before any non-localhost deployment.
 
+## Image pinning
+
+Every service in `compose.yaml` resolves its image from an env var in
+`.env` — each pin is a release tag plus a sha256 manifest-list digest:
+
+```
+OE_WEBAPP_IMAGE=itechuw/openelis-global-2:3.2.1.6@sha256:0fb3a481...
+OE_BRIDGE_IMAGE=itechuw/openelis-analyzer-bridge:3.0.1@sha256:6d43bf5b...
+...
+```
+
+`docker compose pull` returns the exact bytes regardless of when or
+where it runs — even if upstream republishes the tag, the digest pin
+doesn't move.
+
+To bump pins (maintainer workflow):
+
+```bash
+./scripts/pin-versions.sh                  # refresh digests for current versions
+./scripts/pin-versions.sh 3.2.1.7 3.0.2    # bump OE images + bridge
+git diff .env                              # review
+git commit .env -m "chore: bump pins to OE 3.2.1.7 + bridge 3.0.2"
+```
+
+Distro tags release independently of upstream OE versioning — distro
+`3.2.2.0` could ship with upstream OE `3.2.1.6` images.
+
 ## Production deployment
 
 | Topic | Pointer |
