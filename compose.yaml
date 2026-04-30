@@ -67,9 +67,7 @@ services:
             
     oe.openelis.org:
         container_name: openelisglobal-webapp
-        image: itechuw/openelis-global-2:local
-        build:
-            context: ${OE_REPO:-../OpenELIS-Global-2}
+        image: itechuw/openelis-global-2:develop
         platform: linux/amd64
         depends_on:
             db.openelis.org:
@@ -172,9 +170,7 @@ services:
             -  key_trust-store-volume:/etc/openelis-global 
        
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:local
-        build:
-            context: ${OE_REPO:-../OpenELIS-Global-2}/frontend
+        image: itechuw/openelis-global-2-frontend:develop
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -223,9 +219,7 @@ services:
    
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:local
-        build:
-            context: ${BRIDGE_REPO:-../openelis-analyzer-bridge}
+        image: itechuw/openelis-analyzer-bridge:develop
         platform: linux/amd64
         depends_on:
             certs:
