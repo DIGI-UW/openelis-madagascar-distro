@@ -2,10 +2,16 @@
 # seed-qc.sh — Distro-specific QC config seed for the Madagascar demo.
 #
 # Seeds:
-#   1. Westgard rule preset (STANDARD: 1₃ₛ + 2₂ₛ + R₄ₛ + 4₁ₛ enabled)
-#      for HIV-VL on Cepheid GeneXpert.
-#   2. ACTIVE control lot LOT-HIVVL-N (manufacturer mean=1250, SD=125)
-#      so Westgard evaluators can fire on the very next QC run.
+#   1. GeneXpert / ASTM lane:
+#      - Westgard STANDARD preset for HIV-VL on Cepheid GeneXpert
+#      - ACTIVE control lot LOT-HIVVL-N (manufacturer mean=1250, SD=125)
+#   2. QuantStudio / FILE lane (qadocs/ test fixtures):
+#      - Westgard STANDARD preset for VIH-1 on QuantStudio 5
+#      - ACTIVE control lots LOT-LPC-26B (mean=32.00 Ct, SD=0.50)
+#                            LOT-HPC-26B (mean=25.00 Ct, SD=0.40)
+#      Lot numbers + Ct mean/SD chosen to match the synthetic fixture set
+#      in qadocs/QuantStudio Failing QC Samples — z-scores are calibrated
+#      against these exact mean+SD values per fixture README.
 #
 # Why MANUFACTURER_FIXED calculation method:
 #   QCControlLotServiceImpl auto-promotes the lot ESTABLISHMENT → ACTIVE
@@ -135,8 +141,87 @@ case "$LOT_CODE" in
 esac
 rm -f "$LOT_LOG"
 
+## ── QuantStudio / FILE lane ────────────────────────────────────────────────
+echo
+echo "[seed-qc] Resolving VIH-1 test_id and QuantStudio 5 instrument_id..."
+QS5_INST_ID="$(psql_query "SELECT id FROM clinlims.analyzer WHERE name='QuantStudio 5' ORDER BY id LIMIT 1;")"
+VIH1_TEST_ID="$(psql_query "SELECT atm.test_id FROM clinlims.analyzer_test_map atm WHERE atm.analyzer_id=${QS5_INST_ID:-0} AND atm.analyzer_test_name='VIH-1' LIMIT 1;")"
+
+if [ -z "$QS5_INST_ID" ] || [ -z "$VIH1_TEST_ID" ]; then
+  echo "[seed-qc] WARN: skipping QuantStudio QC seed — IDs unresolved (VIH-1 test_id='$VIH1_TEST_ID', QuantStudio 5 instrument_id='$QS5_INST_ID')" >&2
+  echo "[seed-qc]   Re-run scripts/restart-stack.sh --seed-harness to register QuantStudio 5." >&2
+else
+  echo "[seed-qc]   VIH-1 test_id=${VIH1_TEST_ID}, QuantStudio 5 instrument_id=${QS5_INST_ID}"
+
+  echo "[seed-qc] Applying Westgard STANDARD preset for QuantStudio 5..."
+  QS_PRESET_LOG="$(mktemp)"
+  QS_PRESET_CODE=$(curl -sk -o "$QS_PRESET_LOG" -w "%{http_code}" \
+    -X POST -u "${TEST_USER}:${TEST_PASS}" \
+    "${BASE_URL}/api/OpenELIS-Global/rest/qc/ruleConfig/preset" \
+    --data-urlencode "testId=${VIH1_TEST_ID}" \
+    --data-urlencode "instrumentId=${QS5_INST_ID}" \
+    --data-urlencode "preset=STANDARD")
+  case "$QS_PRESET_CODE" in
+    200) echo "[seed-qc]   Westgard preset STANDARD applied (QS5)" ;;
+    409) echo "[seed-qc]   Westgard preset already exists (idempotent skip)" ;;
+    *)   echo "[seed-qc]   WARN: QS5 preset POST returned HTTP ${QS_PRESET_CODE}" >&2
+         sed 's/^/    /' "$QS_PRESET_LOG" >&2 ;;
+  esac
+  rm -f "$QS_PRESET_LOG"
+
+  # Two lots: LPC (Low Positive) at mean=32.00 SD=0.50, HPC (High Positive)
+  # at mean=25.00 SD=0.40. Values match qadocs fixture set per README.
+  for level in LPC HPC; do
+    # controlLevel = "LPC" / "HPC" matches the matched qcRule
+    # SPECIMEN_ID_PREFIX operand the bridge propagates as
+    # Observation.extension[control-level]. This lets OE's Tier-2 resolver
+    # do straight equality on (testId, instrumentId, controlLevel) without
+    # any LPC↔NORMAL translation table.
+    if [ "$level" = "LPC" ]; then
+      LOT_NUM="LOT-LPC-26B"; LOT_LEVEL="LPC"; LOT_MEAN="32.00"; LOT_SD="0.50"
+      LOT_NAME="HIV-1 LTR Low Positive Control"
+    else
+      LOT_NUM="LOT-HPC-26B"; LOT_LEVEL="HPC"; LOT_MEAN="25.00"; LOT_SD="0.40"
+      LOT_NAME="HIV-1 LTR High Positive Control"
+    fi
+    QS_LOT_LOG="$(mktemp)"
+    QS_LOT_CODE=$(curl -sk -o "$QS_LOT_LOG" -w "%{http_code}" \
+      -X POST -u "${TEST_USER}:${TEST_PASS}" \
+      -H "Content-Type: application/json" \
+      "${BASE_URL}/api/OpenELIS-Global/rest/qc/controlLot" \
+      -d "{
+        \"productName\": \"${LOT_NAME}\",
+        \"lotNumber\": \"${LOT_NUM}\",
+        \"manufacturer\": \"Thermo Fisher\",
+        \"controlLevel\": \"${LOT_LEVEL}\",
+        \"testId\": ${VIH1_TEST_ID},
+        \"instrumentId\": ${QS5_INST_ID},
+        \"calculationMethod\": \"MANUFACTURER_FIXED\",
+        \"manufacturerMean\": ${LOT_MEAN},
+        \"manufacturerStdDev\": ${LOT_SD},
+        \"activationDate\": \"${ACTIVATION_TS}\",
+        \"expirationDate\": \"2027-12-31T00:00:00Z\",
+        \"unitOfMeasure\": \"Ct\"
+      }")
+    case "$QS_LOT_CODE" in
+      200|201) echo "[seed-qc]   Control lot ${LOT_NUM} created (mean=${LOT_MEAN} Ct, SD=${LOT_SD})" ;;
+      409)     echo "[seed-qc]   Control lot ${LOT_NUM} already exists (idempotent skip)" ;;
+      *)       echo "[seed-qc]   WARN: ${LOT_NUM} POST returned HTTP ${QS_LOT_CODE}" >&2
+               sed 's/^/    /' "$QS_LOT_LOG" >&2 ;;
+    esac
+    rm -f "$QS_LOT_LOG"
+  done
+fi
+
+echo
 echo "[seed-qc] Done. Drive QC violations with:"
-echo "  curl -X POST http://localhost:8085/simulate/astm/genexpert_astm \\"
-echo "    -H 'Content-Type: application/json' \\"
-echo "    -d '{\"destination\":\"tcp://openelis-analyzer-bridge:12001\",\"qc\":true,\"qc_deviation\":3.5,\"source_ip\":\"10.42.20.10\"}'"
-echo "  → fires 1₃ₛ rejection (z-score=3.5) → qc_alert row → visible in /analyzers/qc/db"
+echo "  GeneXpert (ASTM):"
+echo "    curl -X POST http://localhost:8085/simulate/astm/genexpert_astm \\"
+echo "      -H 'Content-Type: application/json' \\"
+echo "      -d '{\"destination\":\"tcp://openelis-analyzer-bridge:12001\",\"qc\":true,\"qc_deviation\":3.5,\"source_ip\":\"10.42.20.10\"}'"
+echo "    → fires 1₃ₛ rejection (z=3.5)"
+echo
+echo "  QuantStudio (FILE upload via bridge UI):"
+echo "    curl -u bridge:changeme -X POST https://localhost:8442/admin/upload \\"
+echo "      -F analyzerId=<QS5-id> -F file=@qadocs/QuantStudio_Failing_QC_Samples/qc-only_01_1-3s.csv"
+echo "    → fires 1₃ₛ on LPC z-score=+3.0 (Ct=33.500 vs mean 32.00, SD 0.50)"
