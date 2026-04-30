@@ -1,21 +1,63 @@
-name: Release tarball
+name: Release
+
+# Releases are driven by manual workflow_dispatch — the maintainer supplies
+# the distro version, OE version, and bridge version up front. The workflow
+# refreshes image digests in compose.yaml, validates that pins are
+# release-shaped, then tags the result and publishes a GitHub Release.
+#
+# compose.yaml carries literal `repo:tag@sha256:digest` image references on
+# every commit (including main), so a release tag is just a tag of the
+# canonical-state tree — no env-var substitution, no rewriting required.
+#
+# Pushes to main produce a 90-day workflow artifact for inspection but never
+# tag or publish a Release.
 
 on:
+  workflow_dispatch:
+    inputs:
+      distro_version:
+        description: "Distro release version (e.g. 3.2.2.0). Must not collide with an existing tag."
+        required: true
+        type: string
+      oe_version:
+        description: "OpenELIS Global image tag (e.g. 3.2.1.6). Use 'develop' only with allow_develop_pins=true."
+        required: true
+        type: string
+      bridge_version:
+        description: "Analyzer Bridge image tag (e.g. 3.0.1). Use 'develop' only with allow_develop_pins=true."
+        required: true
+        type: string
+      base_ref:
+        description: "Branch or commit SHA to release from."
+        required: false
+        default: "main"
+        type: string
+      allow_develop_pins:
+        description: "Permit non-release pins (e.g. :develop). OFF by default — workflow fails if any pin is non-release."
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "Create the GitHub Release as a draft for review before publishing."
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: "Mark the GitHub Release as a pre-release."
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
-    tags:
-      - "v*"
-      - "[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
-  tarball:
+  artifact:
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0   # need history for `git describe` and `git archive`
+          fetch-depth: 0
 
       - name: Build tarball
         env:
@@ -24,16 +66,112 @@ jobs:
           ./scripts/build-tarball.sh
           echo "TARBALL=openelis-madagascar-distro-${REF_NAME//\//-}.tar.gz" >> "$GITHUB_ENV"
 
-      - name: Upload workflow artifact (main pushes)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        uses: actions/upload-artifact@v4
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ env.TARBALL }}
           path: ${{ env.TARBALL }}
           retention-days: 90
 
-      - name: Attach to GitHub Release (tag pushes)
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        uses: softprops/action-gh-release@v2
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # Surface workflow_dispatch inputs as env vars so run: blocks reference
+      # them via $VAR (bash) rather than ${{ … }} template interpolation —
+      # avoids shell-injection risk surfaced by the GHA workflow security guide.
+      DISTRO_VERSION: ${{ inputs.distro_version }}
+      OE_VERSION_INPUT: ${{ inputs.oe_version }}
+      BRIDGE_VERSION_INPUT: ${{ inputs.bridge_version }}
+      BASE_REF: ${{ inputs.base_ref }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ env.BASE_REF }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate inputs and capture previous tag
+        id: prev_tag
+        run: |
+          if ! [[ "$DISTRO_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?(-[A-Za-z0-9.-]+)?$ ]]; then
+            echo "ERROR: distro_version '$DISTRO_VERSION' does not match expected semver shape." >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/${DISTRO_VERSION}" > /dev/null 2>&1; then
+            echo "ERROR: tag '${DISTRO_VERSION}' already exists on origin." >&2
+            exit 1
+          fi
+          if git rev-parse --verify --quiet "refs/tags/${DISTRO_VERSION}" > /dev/null; then
+            echo "ERROR: tag '${DISTRO_VERSION}' already exists locally." >&2
+            exit 1
+          fi
+          # Highest-versioned existing tag is treated as "previous" for diff purposes.
+          PREV_TAG="$(git tag --list --sort=-v:refname | head -n 1 || true)"
+          echo "value=${PREV_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Previous distro tag: ${PREV_TAG:-<none>}"
+
+      - name: Refresh image pins
+        run: ./scripts/pin-versions.sh "$OE_VERSION_INPUT" "$BRIDGE_VERSION_INPUT"
+
+      - name: Validate pin shape (release-mode)
+        if: ${{ inputs.allow_develop_pins != true }}
+        run: ./scripts/check-release-pins.sh
+
+      - name: Commit (if pins changed) and tag release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add compose.yaml
+          if ! git diff --staged --quiet; then
+            # Multi-line message uses bash variable expansion ($VAR), not
+            # template interpolation — keeps interpolation out of run: blocks.
+            git commit -m "release: ${DISTRO_VERSION}
+
+            OpenELIS Global: ${OE_VERSION_INPUT}
+            Analyzer Bridge:  ${BRIDGE_VERSION_INPUT}
+
+            Refreshed image digests in compose.yaml at release time. This
+            commit is reachable only via the ${DISTRO_VERSION} tag."
+          else
+            echo "No digest changes since ${BASE_REF}; tagging existing HEAD."
+          fi
+          git tag -a "${DISTRO_VERSION}" -m "Release ${DISTRO_VERSION}"
+          git push origin "refs/tags/${DISTRO_VERSION}"
+
+      - name: Build tarball from release tag
+        env:
+          REF_NAME: ${{ env.DISTRO_VERSION }}
+        run: |
+          ./scripts/build-tarball.sh "${DISTRO_VERSION}"
+          echo "TARBALL=openelis-madagascar-distro-${DISTRO_VERSION}.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Upload workflow artifact
+        # Uploaded before Release publication so the tarball is still
+        # retrievable from the run if a later step (notes, publish) fails.
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.TARBALL }}
+          path: ${{ env.TARBALL }}
+          retention-days: 90
+
+      - name: Build release notes
+        env:
+          DISTRO_VERSION: ${{ env.DISTRO_VERSION }}
+          OE_VERSION: ${{ env.OE_VERSION_INPUT }}
+          BRIDGE_VERSION: ${{ env.BRIDGE_VERSION_INPUT }}
+          PREVIOUS_TAG: ${{ steps.prev_tag.outputs.value }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/build-release-notes.sh > release-notes.md
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: ${{ env.DISTRO_VERSION }}
+          name: "OpenELIS Madagascar Distro ${{ env.DISTRO_VERSION }}"
+          body_path: release-notes.md
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
           files: ${{ env.TARBALL }}

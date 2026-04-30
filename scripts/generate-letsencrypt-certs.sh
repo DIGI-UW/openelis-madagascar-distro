@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Issue or renew Let's Encrypt certs (HTTP-01) for the distro reverse proxy.
-# Prerequisites: openelisglobal-proxy running with ./volume/nginx/certbot mounted and
+# Prerequisites: openelisglobal-proxy running with ./configs/nginx/certbot mounted and
 # nginx serving /.well-known/acme-challenge/ (see configs/nginx/nginx.conf).
 #
 # Usage:
@@ -12,7 +12,7 @@
 #   LETSENCRYPT_DOMAINS       comma- or space-separated SAN list
 #   LETSENCRYPT_DOMAIN        legacy single-domain fallback
 #   LETSENCRYPT_PRIMARY_DOMAIN primary domain / default cert name
-#   LETSENCRYPT_CERT_NAME     explicit cert lineage name under volume/letsencrypt/live/
+#   LETSENCRYPT_CERT_NAME     explicit cert lineage name under configs/letsencrypt/live/
 #   LETSENCRYPT_STAGING=true  first-time certonly only: real staging CA (untrusted chain)
 #
 set -euo pipefail
@@ -52,7 +52,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-mkdir -p ./volume/letsencrypt ./volume/nginx/certbot
+mkdir -p ./configs/letsencrypt ./configs/nginx/certbot
 
 DOMAINS_INPUT="${LETSENCRYPT_DOMAINS:-${LETSENCRYPT_DOMAIN:-mgtest.openelis-global.org}}"
 DOMAINS_INPUT="${DOMAINS_INPUT//,/ }"
@@ -90,8 +90,8 @@ if ! docker ps --format '{{.Names}}' | grep -q '^openelisglobal-proxy$'; then
     exit 1
 fi
 
-CERT_PATH="./volume/letsencrypt/live/${CERT_NAME}/fullchain.pem"
-RENEWAL_PATH="./volume/letsencrypt/renewal/${CERT_NAME}.conf"
+CERT_PATH="./configs/letsencrypt/live/${CERT_NAME}/fullchain.pem"
+RENEWAL_PATH="./configs/letsencrypt/renewal/${CERT_NAME}.conf"
 
 DOMAIN_ARGS=()
 for domain in "${DOMAINS[@]}"; do
@@ -123,8 +123,8 @@ fi
 
 run_certbot() {
     docker run --rm \
-        -v "$ROOT/volume/letsencrypt:/etc/letsencrypt" \
-        -v "$ROOT/volume/nginx/certbot:/var/www/certbot" \
+        -v "$ROOT/configs/letsencrypt:/etc/letsencrypt" \
+        -v "$ROOT/configs/nginx/certbot:/var/www/certbot" \
         certbot/certbot:latest "$@"
 }
 
