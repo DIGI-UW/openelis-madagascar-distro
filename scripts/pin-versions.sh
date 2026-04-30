@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 # Resolve upstream image digests and rewrite .env in place.
 #
-# Bump cadence:
-#   ./scripts/pin-versions.sh                  # refresh digests for current pinned versions
-#   ./scripts/pin-versions.sh 3.2.1.7          # bump OE images to a new tag (bridge unchanged)
-#   ./scripts/pin-versions.sh 3.2.1.7 3.0.2    # bump OE + bridge
+# Bump cadence — accepts any published upstream tag (release name or
+# `develop`), each gets resolved to a manifest-list digest:
+#
+#   ./scripts/pin-versions.sh                       # refresh digests, current pinned tags
+#   ./scripts/pin-versions.sh 3.2.1.7               # bump OE to 3.2.1.7 release; bridge unchanged
+#   ./scripts/pin-versions.sh 3.2.1.7 3.0.2         # bump OE + bridge to release tags
+#   ./scripts/pin-versions.sh develop 3.0.1         # pin OE to current :develop snapshot; bridge to release
+#   ./scripts/pin-versions.sh develop develop       # both pinned to current develop snapshots
+#
+# Whatever tag you pass is the human-readable label; the digest fetched
+# alongside it is what docker actually pulls. Re-running with no args
+# re-resolves whatever's currently in .env (useful for refreshing a
+# `:develop` snapshot to today's digest).
 #
 # After running, review:  git diff .env  →  commit.
 set -euo pipefail

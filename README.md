@@ -42,17 +42,25 @@ OE_BRIDGE_IMAGE=itechuw/openelis-analyzer-bridge:3.0.1@sha256:6d43bf5b...
 where it runs — even if upstream republishes the tag, the digest pin
 doesn't move.
 
-To bump pins (maintainer workflow):
+The tag part is human-readable documentation ("this is the 3.2.1.6
+release", "this is a develop snapshot"); the digest is the immutability
+lock. Docker compose syntax `repo:tag@digest` carries both.
+
+To bump pins (maintainer workflow) — accepts any published upstream tag,
+release name or `develop`:
 
 ```bash
-./scripts/pin-versions.sh                  # refresh digests for current versions
-./scripts/pin-versions.sh 3.2.1.7 3.0.2    # bump OE images + bridge
-git diff .env                              # review
-git commit .env -m "chore: bump pins to OE 3.2.1.7 + bridge 3.0.2"
+./scripts/pin-versions.sh                       # refresh digests, current tags
+./scripts/pin-versions.sh 3.2.1.7 3.0.2         # bump both to release tags
+./scripts/pin-versions.sh develop 3.0.1         # OE to current develop snapshot; bridge to release
+./scripts/pin-versions.sh develop develop       # both at current develop snapshots
+git diff .env                                    # review
+git commit .env -m "chore: bump pins to ..."
 ```
 
 Distro tags release independently of upstream OE versioning — distro
-`3.2.2.0` could ship with upstream OE `3.2.1.6` images.
+`3.2.2.0` could ship with OE `3.2.1.6` images, OE `develop` snapshots,
+or any mix.
 
 ## Production deployment
 
