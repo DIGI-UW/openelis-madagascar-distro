@@ -27,7 +27,7 @@ x-loki-logging:
 services:
     certs:
         container_name: oe-certs 
-        image: itechuw/certgen:main
+        image: ${OE_CERTGEN_IMAGE}
         platform: linux/amd64
         restart: "no"
         environment:
@@ -42,7 +42,7 @@ services:
 
     db.openelis.org:
         container_name: openelisglobal-database
-        image: itechuw/openelis-global-2-database:develop
+        image: ${OE_DATABASE_IMAGE}
         platform: linux/amd64
         ports:
             - "15432:5432"
@@ -67,7 +67,7 @@ services:
             
     oe.openelis.org:
         container_name: openelisglobal-webapp
-        image: itechuw/openelis-global-2:develop
+        image: ${OE_WEBAPP_IMAGE}
         platform: linux/amd64
         depends_on:
             db.openelis.org:
@@ -126,7 +126,7 @@ services:
             
     fhir.openelis.org:
         container_name: external-fhir-api
-        image: itechuw/openelis-global-2-fhir:develop
+        image: ${OE_FHIR_IMAGE}
         platform: linux/amd64
         ports:
             - "8081:8080"
@@ -170,7 +170,7 @@ services:
             -  key_trust-store-volume:/etc/openelis-global 
        
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:develop
+        image: ${OE_FRONTEND_IMAGE}
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -187,7 +187,7 @@ services:
             start_period: 20s
 
     proxy:
-        image: itechuw/openelis-global-2-proxy:develop
+        image: ${OE_PROXY_IMAGE}
         container_name: openelisglobal-proxy
         platform: linux/amd64
         ports:
@@ -219,7 +219,7 @@ services:
    
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:develop
+        image: ${OE_BRIDGE_IMAGE}
         platform: linux/amd64
         depends_on:
             certs:
