@@ -38,7 +38,9 @@ compose env vars.
    ```
 
 4. Recreate the proxy with the Let’s Encrypt overlay so nginx can read
-   `/etc/letsencrypt/live/$LETSENCRYPT_DOMAIN/` and symlink into the paths nginx uses:
+   `/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/` and symlink into the paths nginx uses
+   (the lineage directory is selected by `LETSENCRYPT_CERT_NAME`, falling back to
+   `LETSENCRYPT_PRIMARY_DOMAIN` then the legacy `LETSENCRYPT_DOMAIN`):
 
    ```bash
    docker compose -f compose.yaml -f compose.letsencrypt.yaml up -d --force-recreate proxy
@@ -51,7 +53,7 @@ compose env vars.
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
 | `LETSENCRYPT_EMAIL` | Yes (for `certbot`) | — | ACME account / notices |
-| `LETSENCRYPT_DOMAINS` | No | `madagascar.openelis-global.org,mgtest.openelis-global.org` | Comma- or space-separated SAN list |
+| `LETSENCRYPT_DOMAINS` | No | `mgtest.openelis-global.org` | Comma- or space-separated SAN list |
 | `LETSENCRYPT_PRIMARY_DOMAIN` | No | first entry in `LETSENCRYPT_DOMAINS` | Default cert lineage / primary hostname |
 | `LETSENCRYPT_CERT_NAME` | No | `LETSENCRYPT_PRIMARY_DOMAIN` | Explicit lineage name under `configs/letsencrypt/live/` |
 | `LETSENCRYPT_DOMAIN` | Legacy | — | Backward-compatible single-domain fallback |

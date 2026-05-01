@@ -125,7 +125,7 @@ run_certbot() {
     docker run --rm \
         -v "$ROOT/configs/letsencrypt:/etc/letsencrypt" \
         -v "$ROOT/configs/nginx/certbot:/var/www/certbot" \
-        certbot/certbot:latest "$@"
+        certbot/certbot:v2.11.0 "$@"
 }
 
 echo "Certificate name: ${CERT_NAME}"
