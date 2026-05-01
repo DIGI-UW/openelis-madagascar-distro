@@ -27,7 +27,7 @@ x-loki-logging:
 services:
     certs:
         container_name: oe-certs
-        image: itechuw/certgen:main@sha256:e27a8194300ba73309e835a4070e9ce531687eb3ee604895de781f3061791635
+        image: itechuw/certgen:main
         platform: linux/amd64
         restart: "no"
         environment:
@@ -42,7 +42,7 @@ services:
 
     db.openelis.org:
         container_name: openelisglobal-database
-        image: itechuw/openelis-global-2-database:3.2.1.6@sha256:89c8e1cacbcf933ebcbb17686d946bd94964892cefe4cf57950981b71498cb7e
+        image: itechuw/openelis-global-2-database:develop
         platform: linux/amd64
         ports:
             - "15432:5432"
@@ -67,7 +67,7 @@ services:
 
     oe.openelis.org:
         container_name: openelisglobal-webapp
-        image: itechuw/openelis-global-2:3.2.1.6@sha256:0fb3a4814ce8ab3106c84dd123982a50e2835aca391624d1e521a2bbdb883b7c
+        image: itechuw/openelis-global-2:develop
         platform: linux/amd64
         depends_on:
             db.openelis.org:
@@ -118,15 +118,15 @@ services:
             - analyzer-imports:/data/analyzer-imports
             # Host filesystem for real analyzer file drops (NFS, USB, etc.).
             # Read-only: the bridge must never delete or move source files
-            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+            - ${ANALYZER_HOST_MOUNT:-./configs/analyzer-drops}:/data/analyzer-drops:ro
 
         secrets:
             - source: common.properties
 
     fhir.openelis.org:
         container_name: external-fhir-api
-        image: itechuw/openelis-global-2-fhir:3.2.1.6@sha256:92a21b841cc67777543b2d089a8cde9043e7ee2ebec368341a683246ec8fc5bd
         platform: linux/amd64
+        image: itechuw/openelis-global-2-fhir:develop
         ports:
             - "8081:8080"
             - "8444:8443"
@@ -169,7 +169,7 @@ services:
             -  key_trust-store-volume:/etc/openelis-global
 
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:3.2.1.6@sha256:e30e6aee229c8607fc6fac797d5e123736c4279dff4fa7cd86cc782509e25a3a
+        image: itechuw/openelis-global-2-frontend:develop
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -186,7 +186,7 @@ services:
             start_period: 20s
 
     proxy:
-        image: itechuw/openelis-global-2-proxy:3.2.1.6@sha256:0e0f0245a8c4e97cbfa1483ef302c4fe9616acdc9ecdce4017ee93900a23567c
+        image: itechuw/openelis-global-2-proxy:develop
         container_name: openelisglobal-proxy
         platform: linux/amd64
         ports:
@@ -218,7 +218,7 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:3.0.1@sha256:6d43bf5b5556863f107fe912d220f8ac0ae25fc3201ac38c861453ee5dbe5d43
+        image: itechuw/openelis-analyzer-bridge:3.0.2
         platform: linux/amd64
         depends_on:
             certs:
@@ -232,7 +232,7 @@ services:
             - analyzer-imports:/data/analyzer-imports
             # Host filesystem for real analyzer file drops (NFS, USB, etc.).
             # Read-only: the bridge must never delete or move source files.
-            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+            - ${ANALYZER_HOST_MOUNT:-./configs/analyzer-drops}:/data/analyzer-drops:ro
             # Durable state store for the bridge's FileStateStore (SQLite, WAL mode).
             # Held on a dedicated named volume rather than sharing analyzer-imports
             # or the ${ANALYZER_HOST_MOUNT} bind mount, so state survives container

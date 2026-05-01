@@ -1,0 +1,28 @@
+{
+  "program": {
+    "code": "PATCO",
+    "programName": "Patient Coordinates",
+    "questionnaireUUID": "c17ced9a-fb9a-4603-af80-cb901f3a233c"
+  },
+  "testSectionName": "Hematology",
+  "additionalOrderEntryQuestions": {
+    "resourceType": "Questionnaire",
+    "id": "c17ced9a-fb9a-4603-af80-cb901f3a233c",
+    "name": "Patient Coordinates",
+    "status": "active",
+    "subjectType": ["Patient", "Specimen", "ServiceRequest"],
+    "description": "Capture patient GPS coordinates at sample collection",
+    "item": [
+      {
+        "linkId": "67293e8a-4f6a-469e-a38d-7c33d36408fa",
+        "text": "Longitude",
+        "type": "decimal"
+      },
+      {
+        "linkId": "9445f148-5105-4ac1-98df-17d40b235cec",
+        "text": "Latitude",
+        "type": "decimal"
+      }
+    ]
+  }
+}
