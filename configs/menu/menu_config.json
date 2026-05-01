@@ -65,11 +65,7 @@
     },
     
      {
-      "elementId": "menu_eqa_tests",
-      "childMenus": ["*"]
-    },
-     {
-      "elementId": "menu_eqa_mgmt",
+      "elementId": "menu_eqa",
       "childMenus": ["*"]
     },
      {
