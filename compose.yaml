@@ -27,7 +27,7 @@ x-loki-logging:
 services:
     certs:
         container_name: oe-certs
-        image: itechuw/certgen:main
+        image: itechuw/certgen:main@sha256:e27a8194300ba73309e835a4070e9ce531687eb3ee604895de781f3061791635
         platform: linux/amd64
         restart: "no"
         environment:
@@ -42,7 +42,7 @@ services:
 
     db.openelis.org:
         container_name: openelisglobal-database
-        image: itechuw/openelis-global-2-database:develop
+        image: itechuw/openelis-global-2-database:3.2.1.7@sha256:dbd4e24415ec269ae8c80f15b1d54c5927360c0116a393cdab88bbf6c506f853
         platform: linux/amd64
         ports:
             - "15432:5432"
@@ -67,7 +67,7 @@ services:
 
     oe.openelis.org:
         container_name: openelisglobal-webapp
-        image: itechuw/openelis-global-2:develop
+        image: itechuw/openelis-global-2:3.2.1.7@sha256:afdce675edaf29cf63e78973a35e8312a87f6613bea8746081573fbef3024de6
         platform: linux/amd64
         depends_on:
             db.openelis.org:
@@ -126,7 +126,7 @@ services:
     fhir.openelis.org:
         container_name: external-fhir-api
         platform: linux/amd64
-        image: itechuw/openelis-global-2-fhir:develop
+        image: itechuw/openelis-global-2-fhir:3.2.1.7@sha256:808d7b2395d129c1e47ec0f6eda3e8da9d933c9214a2ecb248bd174a250efcdb
         ports:
             - "8081:8080"
             - "8444:8443"
@@ -169,7 +169,7 @@ services:
             -  key_trust-store-volume:/etc/openelis-global
 
     frontend.openelis.org:
-        image: itechuw/openelis-global-2-frontend:develop
+        image: itechuw/openelis-global-2-frontend:3.2.1.7@sha256:53a628b5f181fe82db35ae939e6efa14e0356f0d8c0b178c7838fe660233d6d5
         container_name: openelisglobal-front-end
         platform: linux/amd64
         networks:
@@ -186,7 +186,7 @@ services:
             start_period: 20s
 
     proxy:
-        image: itechuw/openelis-global-2-proxy:develop
+        image: itechuw/openelis-global-2-proxy:3.2.1.7@sha256:78f6dba7a971f36d0d6d3f78f6287a0dd0847c86704840b7f9644a1832e94886
         container_name: openelisglobal-proxy
         platform: linux/amd64
         ports:
@@ -218,7 +218,7 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:develop
+        image: itechuw/openelis-analyzer-bridge:3.0.2@sha256:25971154216a56b32ae7c6e7fb3294a68e797cc019be798636b9321f7fdffbcf
         platform: linux/amd64
         depends_on:
             certs:
