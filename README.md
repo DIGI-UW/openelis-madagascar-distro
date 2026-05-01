@@ -115,6 +115,32 @@ bridge picks the file up. See [scripts/converters/README.md](scripts/converters/
 for per-script usage, the adapt-at-host design rationale, and operational
 placement.
 
+## Catalog configuration
+
+`configs/configuration/backend/<domain>/madagascar-*.csv` are
+Madagascar's production catalog data — lab roles, tests, sample types,
+test sections, test results, dictionary entries, and address hierarchy
+levels/values. OE auto-imports them at startup via
+`ConfigurationInitializationService`, with SHA-256 checksum tracking
+that skips re-import on subsequent boots if file content is unchanged.
+Imports are idempotent (upsert by domain key), so renaming or
+re-running is safe.
+
+The `madagascar-` prefix marks these as Madagascar-specific data, not
+generic samples (the prior `example-` prefix was misleading: the
+loader doesn't filter by filename prefix — any `*.csv` in each domain
+subdirectory is processed).
+
+If this distro is ever reused as a template by other deployments, OE
+also supports `OPENELIS_CONFIGURATION_INSTANCE_ID` for instance-scoped
+subdirectory overlays
+([ConfigurationInitializationService.java:125-145][cis]) — set the
+env var to the customer's instance id and place that customer's CSVs
+under `<domain>/<instance-id>/*.csv` to scope them. Not implemented
+here because this artifact is Madagascar-specific.
+
+[cis]: https://github.com/I-TECH-UW/OpenELIS-Global-2/blob/develop/src/main/java/org/openelisglobal/configuration/service/ConfigurationInitializationService.java#L125-L145
+
 ## Developing or testing this distro
 
 The dev workspace, Playwright E2E tests, build overlays, and dev
