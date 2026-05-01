@@ -1,0 +1,285 @@
+x-logging:
+  &local-logging
+  driver: "local"
+  options:
+    max-size: "20m"
+    max-file: "50"
+
+x-loki-logging:
+  &loki-logging
+  driver: "loki"
+  options:
+    max-size: "20m"
+    max-file: "50"
+    loki-url: "[% loki_url %]"
+    loki-external-labels: "container_name={{.Name}},hostname=[% host_name %]"
+    loki-pipeline-stages: |
+          - multiline:
+              firstline: '^\d{4}-\d{2}-\d{2}[T ]?\d{2}:\d{2}:\d{2}.\d{3}'
+          - labeldrop:
+              - compose_project
+              - compose_service
+              - filename
+              - source
+              - stream
+              - swarm_service
+              - swarm_stack
+services:
+    certs:
+        container_name: oe-certs
+        image: itechuw/certgen:main@sha256:e27a8194300ba73309e835a4070e9ce531687eb3ee604895de781f3061791635
+        platform: linux/amd64
+        restart: "no"
+        environment:
+            - KEYSTORE_PW="kspass"
+            - TRUSTSTORE_PW="tspass"
+        networks:
+            - openelis-network
+        volumes:
+            -  key_trust-store-volume:/etc/openelis-global
+            -  keys-vol:/etc/ssl/private/
+            -  certs-vol:/etc/ssl/certs/
+
+    db.openelis.org:
+        container_name: openelisglobal-database
+        image: itechuw/openelis-global-2-database:3.2.1.6@sha256:89c8e1cacbcf933ebcbb17686d946bd94964892cefe4cf57950981b71498cb7e
+        platform: linux/amd64
+        ports:
+            - "15432:5432"
+        restart: always
+        env_file:
+            - ./configs/database/database.env
+        environment:
+            - DB_PASSWORD=${OE_DB_PASSWORD:-clinlims}
+            - DB_SUPERUSER_PASSWORD=${ADMIN_PASSWORD:-superuser}
+        volumes:
+              # preserves the database between containers
+            - ${DB_VOLUME_MOUNT:-./configs/database/data}:/var/lib/postgresql/data
+
+        logging: *local-logging
+        networks:
+            - openelis-network
+        healthcheck:
+            test: [ "CMD", "pg_isready", "-q", "-d", "clinlims", "-U", "clinlims" ]
+            timeout: 45s
+            interval: 10s
+            retries: 10
+
+    oe.openelis.org:
+        container_name: openelisglobal-webapp
+        image: itechuw/openelis-global-2:3.2.1.6@sha256:0fb3a4814ce8ab3106c84dd123982a50e2835aca391624d1e521a2bbdb883b7c
+        platform: linux/amd64
+        depends_on:
+            db.openelis.org:
+                condition: service_healthy
+            certs:
+                condition: service_completed_successfully
+            openelis-analyzer-bridge:
+                condition: service_started
+        ports:
+            - "8080:8080"
+            - "8443:8443"
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "curl -k -sf https://localhost:8443/OpenELIS-Global/health > /dev/null"]
+            interval: 15s
+            timeout: 10s
+            retries: 8
+            start_period: 90s
+        networks:
+          openelis-network:
+              ipv4_address: 172.20.1.121
+        logging: *local-logging
+        environment:
+            - DEFAULT_PW=${OE_ADMIN_PASSWORD:-adminADMIN!}
+            - TZ=Indian/Antananarivo
+              # Config variables loaded through Tomacat server.xml
+            - CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://db.openelis.org:5432/clinlims -Ddatasource.username=clinlims -Ddatasource.password=${OE_DB_PASSWORD:-clinlims} -Doe.ssl.truststorepath=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore} -Doe.ssl.truststorepassword=${SSL_TRUSTSTORE_PASSWORD:-tspass} -Doe.ssl.keystorepath=${SSL_KEYSTORE_PATH:-/etc/openelis-global/keystore} -Doe.ssl.keystorepassword=${SSL_KEYSTORE_PASSWORD:-kspass}
+             # Env variables passed to the common properties file
+            - SSL_KEYSTORE_PATH=${SSL_KEYSTORE_PATH:-/etc/openelis-global/keystore}
+            - SSL_KEYSTORE_PASSWORD=${SSL_KEYSTORE_PASSWORD:-kspass}
+            - SSL_TRUSTSTORE_PATH=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore}
+            - SSL_TRUSTSTORE_PASSWORD=${SSL_TRUSTSTORE_PASSWORD:-tspass}
+            # Bridge HTTPS API (same Docker network). OE pushes analyzer bindings here at startup.
+            - ANALYZER_BRIDGE_URL=https://bridge.openelis.org:8443
+        volumes:
+            -  key_trust-store-volume:/etc/openelis-global
+            -  lucene_index-vol:/var/lib/lucene_index
+            - ./configs/plugins/:/var/lib/openelis-global/plugins
+            - ./configs/logs/oeLogs:/var/lib/openelis-global/logs
+            - ./configs/logs/tomcatLogs/:/usr/local/tomcat/logs
+            - ./configs/properties:/var/lib/openelis-global/properties
+            - ./configs/analyzer/analyzer-test-map.csv:/var/lib/openelis-global/analyzer/analyzer-test-map.csv
+            - ./configs/odoo/odoo-test-product-mapping.csv:/var/lib/openelis-global/odoo/odoo-test-product-mapping.csv
+            - ./configs/programs/:/var/lib/openelis-global/programs
+            - ./configs/configuration:/var/lib/openelis-global/configuration
+            - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
+            - ./configs/analyzer-profiles:/data/analyzer-profiles:ro
+            - analyzer-imports:/data/analyzer-imports
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+
+        secrets:
+            - source: common.properties
+
+    fhir.openelis.org:
+        container_name: external-fhir-api
+        image: itechuw/openelis-global-2-fhir:3.2.1.6@sha256:92a21b841cc67777543b2d089a8cde9043e7ee2ebec368341a683246ec8fc5bd
+        platform: linux/amd64
+        ports:
+            - "8081:8080"
+            - "8444:8443"
+        depends_on:
+            db.openelis.org:
+                condition: service_healthy
+            certs:
+                condition: service_completed_successfully
+        networks:
+            - openelis-network
+        restart: always
+        healthcheck:
+            # HAPI on 8443 requires client-cert TLS for HTTPS handshakes; a
+            # TCP-only probe is enough to verify the server is listening
+            # (OE talks to it via the truststore, not curl).
+            test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/8443'"]
+            interval: 15s
+            timeout: 5s
+            retries: 6
+            start_period: 60s
+        environment:
+          TZ: America/New_York
+
+          JAVA_OPTS: "-Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore}
+                      -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD:-tspass}
+                      -Djavax.net.ssl.trustStoreType=pkcs12
+                      -Djavax.net.ssl.keyStore=${SSL_KEYSTORE_PATH:-/etc/openelis-global/keystore}
+                      -Djavax.net.ssl.keyStorePassword=${SSL_KEYSTORE_PASSWORD:-kspass}
+                      -Djavax.net.ssl.keyStoreType=pkcs12"
+          # Config variables loaded through Tomacat server.xml
+          CATALINA_OPTS: "-Dhapi.ssl.truststorepath=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore} -Dhapi.ssl.truststorepassword=${SSL_TRUSTSTORE_PASSWORD:-tspass} -Dhapi.ssl.keystorepath=${SSL_KEYSTORE_PATH:-/etc/openelis-global/keystore} -Dhapi.ssl.keystorepassword=${SSL_KEYSTORE_PASSWORD:-kspass}"
+          # Config variables loaded through Hapi application.yml
+          FHIR_DATASOURCE_URL : "jdbc:postgresql://db.openelis.org:5432/clinlims?currentSchema=clinlims"
+          FHIR_DATASOURCE_USERNAME: "clinlims"
+          FHIR_DATASOURCE_PASSWORD: ${OE_DB_PASSWORD:-clinlims}
+          FHIR_SERVER_ADRESS: "http://fhir.openelis.org:8080/fhir/"
+
+        logging: *local-logging
+        volumes:
+            -  key_trust-store-volume:/etc/openelis-global
+
+    frontend.openelis.org:
+        image: itechuw/openelis-global-2-frontend:3.2.1.6@sha256:e30e6aee229c8607fc6fac797d5e123736c4279dff4fa7cd86cc782509e25a3a
+        container_name: openelisglobal-front-end
+        platform: linux/amd64
+        networks:
+            - openelis-network
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+        logging: *local-logging
+        tty: true
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:80/ > /dev/null 2>&1 || curl -sf http://localhost:80/ > /dev/null"]
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+
+    proxy:
+        image: itechuw/openelis-global-2-proxy:3.2.1.6@sha256:0e0f0245a8c4e97cbfa1483ef302c4fe9616acdc9ecdce4017ee93900a23567c
+        container_name: openelisglobal-proxy
+        platform: linux/amd64
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - certs-vol:/etc/nginx/certs/
+            - keys-vol:/etc/nginx/keys/
+            - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            # ACME HTTP-01 webroot; used by scripts/generate-letsencrypt-certs.sh and compose.letsencrypt.yaml
+            - ./configs/nginx/certbot:/var/www/certbot
+        restart: unless-stopped
+        networks:
+            - openelis-network
+        logging: *local-logging
+        depends_on:
+            certs:
+                condition: service_completed_successfully
+            oe.openelis.org:
+                condition: service_healthy
+            frontend.openelis.org:
+                condition: service_started
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:80/ > /dev/null 2>&1 || curl -sf http://localhost:80/ > /dev/null"]
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
+    openelis-analyzer-bridge:
+        container_name: openelis-analyzer-bridge
+        image: itechuw/openelis-analyzer-bridge:3.0.1@sha256:6d43bf5b5556863f107fe912d220f8ac0ae25fc3201ac38c861453ee5dbe5d43
+        platform: linux/amd64
+        depends_on:
+            certs:
+                condition: service_completed_successfully
+        ports:
+            - "8442:8443" # HTTPS API port
+            - "12000:12001" # ASTM listen port
+        volumes:
+            - ./configs/astm/configuration.yml:/app/configuration.yml:ro
+            -  key_trust-store-volume:/etc/openelis-global
+            - analyzer-imports:/data/analyzer-imports
+            # Host filesystem for real analyzer file drops (NFS, USB, etc.).
+            # Read-only: the bridge must never delete or move source files.
+            - ${ANALYZER_HOST_MOUNT:-/mnt}:${ANALYZER_HOST_MOUNT:-/mnt}:ro
+            # Durable state store for the bridge's FileStateStore (SQLite, WAL mode).
+            # Held on a dedicated named volume rather than sharing analyzer-imports
+            # or the ${ANALYZER_HOST_MOUNT} bind mount, so state survives container
+            # recreation and the source mount can stay read-only.
+            - bridge-state:/data/openelis-analyzer-bridge
+        environment:
+            SPRING_PROFILES_ACTIVE: dev
+            BRIDGE_FILE_ENABLED: "true"
+            # Point the bridge at the named volume mount. Must match the
+            # volume mount path above. Spring Boot maps this env var to the
+            # bridge.file.state-store-path config property.
+            BRIDGE_FILE_STATE_STORE_PATH: /data/openelis-analyzer-bridge/state.db
+            LOGGING_LEVEL_ORG_ITECH: TRACE
+            # Align with CI harness: HttpForwardingRouter appends /astm, /hl7, /csv
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME: ${ORG_ITECH_AHB_FORWARD_HTTP_SERVER_USERNAME:-admin}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_PASSWORD: ${OE_ADMIN_PASSWORD:-adminADMIN!}
+            ORG_ITECH_AHB_FORWARD_HTTP_SERVER_INSECURE_TLS: "true"
+            JDK_JAVA_OPTIONS: -Djdk.internal.httpclient.disableHostnameVerification=true
+            JAVA_OPTS: |
+                -Djavax.net.ssl.trustStore=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore}
+                -Djavax.net.ssl.trustStorePassword=${SSL_TRUSTSTORE_PASSWORD:-tspass}
+                -Djavax.net.ssl.trustStoreType=pkcs12
+        networks:
+            openelis-network:
+                aliases:
+                    - bridge.openelis.org
+        restart: unless-stopped
+
+secrets:
+  common.properties:
+    file:  ./configs/properties/common.properties
+
+networks:
+  openelis-network:
+    name: openelis-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24
+
+volumes:
+  key_trust-store-volume:
+  certs-vol:
+  keys-vol:
+  lucene_index-vol:
+  analyzer-imports:
+  # Durable FileStateStore for the analyzer bridge — must survive container
+  # recreation so processing state (PROCESSED / FAILED / RETRYING) is not lost.
+  bridge-state:

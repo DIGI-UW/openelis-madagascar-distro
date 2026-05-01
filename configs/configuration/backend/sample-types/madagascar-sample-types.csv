@@ -1,0 +1,12 @@
+description,localAbbreviation,domain,isActive,sortOrder,localization:en,localization:fr,localization:es,localization:id
+Cervical Swab,CERV,H,Y,50,Cervical Swab,Écouvillon Cervical,,
+Vaginal Swab,VAGS,H,Y,51,Vaginal Swab,Écouvillon Vaginal,,
+Endocervical Swab,ENDC,H,Y,52,Endocervical Swab,Écouvillon Endocervical,,
+Nasal Swab,NAS,H,Y,53,Nasal Swab,Écouvillon Nasal,,
+Nasopharyngeal Swab,NPS,H,Y,54,Nasopharyngeal Swab,Écouvillon Nasopharyngé,,
+Wound Swab,WND,H,Y,55,Wound Swab,Écouvillon de Plaie,,
+Rectal Swab,RECT,H,Y,56,Rectal Swab,Écouvillon Rectal,,
+Lesion Swab,LESN,H,Y,57,Lesion Swab,Écouvillon de Lésion,,
+Stool,STL,H,Y,58,Stool,Selles,,
+CSF,CSF,H,Y,59,Cerebrospinal Fluid,Liquide Céphalo-Rachidien,,
+Urine,URIN,H,Y,60,Urine,Urine,,

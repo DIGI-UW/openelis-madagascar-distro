@@ -65,11 +65,7 @@
     },
     
      {
-      "elementId": "menu_eqa_tests",
-      "childMenus": ["*"]
-    },
-     {
-      "elementId": "menu_eqa_mgmt",
+      "elementId": "menu_eqa",
       "childMenus": ["*"]
     },
      {
@@ -267,12 +263,25 @@
         {
           "elementId": "menu_reports_audittrail",
           "childMenus": ["*"]
+        },
+        {
+          "elementId": "menu_reports_tatreport",
+          "childMenus": []
         }
       ]
     },
     {
       "elementId": "menu_administration",
       "childMenus": []
+    },
+    {
+      "elementId": "menu_generic_sample",
+      "childMenus": [
+        {
+          "elementId": "menu_sample_management",
+          "childMenus": []
+        }
+      ]
     },
     {
       "elementId": "menu_help",
