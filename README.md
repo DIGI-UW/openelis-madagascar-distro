@@ -108,16 +108,12 @@ from `.env.example` (uncomment the LE block) and follow
 
 ## Lab-data utilities
 
-`scripts/convert-*.py` are standalone preprocessors that normalize raw
-analyzer exports into the shape each `configs/analyzer-profiles/file/*.json`
-profile expects, before the bridge picks the file up:
-
-- `convert-fluorocycler-legacy.py` — legacy manually-copy-pasted FluoroCycler XT XLSX → standardized FC-XT XLSX template (`configs/templates/FC-XT_Template.xlsx`).
-- `convert-multiskan-skanit.py` — Thermo Multiskan SkanIt dual-plate-grid XLSX export → well-per-row CSV.
-- `convert-tecan-magellan.py` — Tecan Infinite F50 custom Magellan two-sheet XLSX → well-per-row CSV.
-
-Requires `openpyxl` (`pip install openpyxl`). Run with
-`python3 scripts/convert-<analyzer>.py --help` for usage.
+`scripts/converters/` holds standalone host-side preprocessors that
+normalize vendor-specific analyzer exports into the shape each
+`configs/analyzer-profiles/file/*.json` profile expects, before the
+bridge picks the file up. See [scripts/converters/README.md](scripts/converters/README.md)
+for per-script usage, the adapt-at-host design rationale, and operational
+placement.
 
 ## Developing or testing this distro
 
