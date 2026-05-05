@@ -6,8 +6,11 @@
 # Locally-built release tarballs (scripts/build-tarball.sh output).
 openelis-madagascar-distro-*.tar.gz
 
-# Local compose overrides (auto-loaded by Docker Compose if present;
-# machine-specific paths; see docs/validation.md).
+# Local compose files. The canonical tracked compose lives at
+# docker-compose.yml; compose.yaml + the override files are local
+# mgtest/test-harness state with :local image pins and machine-specific
+# paths — never commit these.
+compose.yaml
 compose.override.yaml
 compose.override.yml
 docker-compose.override.yml
