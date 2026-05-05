@@ -1,4 +1,6 @@
-level,typeName,displayKey,sortOrder,defaultValue
-1,Province,address.level.province,1,
-2,Health Region,address.level.region,2,
-3,Health District,address.level.district,3,
+level,typeName,displayKey,sortOrder,defaultValue,inputType
+1,Province,address.level.province,1,,dropdown
+2,Health Region,address.level.region,2,,dropdown
+3,Health District,address.level.district,3,,dropdown
+4,Fokontany,address.level.fokontany,4,,freetext
+5,Hamlet/Lot,address.level.hamletOrLot,5,,freetext
