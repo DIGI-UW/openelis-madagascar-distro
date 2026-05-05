@@ -1,3 +1,4 @@
 level,typeName,displayKey,sortOrder,defaultValue
-1,Health Region,address.level.region,1,
-2,Health District,address.level.district,2,
+1,Province,address.level.province,1,
+2,Health Region,address.level.region,2,
+3,Health District,address.level.district,3,
