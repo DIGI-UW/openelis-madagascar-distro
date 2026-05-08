@@ -1,5 +1,6 @@
 # Local secrets and env (do not commit credentials)
 .env
+.env.letsencrypt
 .env.local
 .env.*.local
 

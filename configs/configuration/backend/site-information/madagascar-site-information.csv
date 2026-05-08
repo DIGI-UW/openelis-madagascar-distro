@@ -1,0 +1,5 @@
+name,value,domainName,valueType,tag,description,instructionKey,descriptionKey,group,encrypted
+phone format,+261 (37|38) XX XXX XX | +(37|38) XX XXX XX | (37|38) XX XXX XX,validationConfig,text,phone,Accepted local phone number formats,,,4,false
+phone format label,37 XX XXX XX | 38 XX XXX XX,validationConfig,text,phone,Displayed local phone number format hint,,,4,false
+phone international validation,E164,validationConfig,text,phone,International phone validation mode,,,4,false
+phone international format label,+CC XXXXXXXX,validationConfig,text,phone,Displayed international visitor phone number format hint,,,4,false
