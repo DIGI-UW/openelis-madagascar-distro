@@ -19,14 +19,17 @@ docker-compose.override.yml
 # Database bind mounts and local OE config overrides
 configs/logs/
 configs/logs/*
-configs/database/data/
-configs/database/data2/
+configs/database/data*/
 **/*checksum*.properties
 **/*checksums*.properties
 configs/properties/TotalSystemConfiguration.properties
 configs/properties/ChangedSystemConfiguration.properties
 
-# Runtime TLS / ACME volume (generated; track volume/**/.gitkeep as needed)
+# Runtime TLS / ACME material (generated; keep .gitkeep placeholders only)
+configs/letsencrypt/live/
+configs/letsencrypt/archive/
+configs/letsencrypt/renewal/
+configs/letsencrypt/accounts/
 volume/letsencrypt/live/
 volume/letsencrypt/archive/
 volume/letsencrypt/renewal/

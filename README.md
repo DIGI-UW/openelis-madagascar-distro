@@ -101,6 +101,7 @@ byte-reproducible package.
 |---|---|
 | Let's Encrypt TLS for a public hostname | [docs/letsencrypt.md](docs/letsencrypt.md) |
 | Permission errors on `configs/` | `./scripts/fix-config-permissions.sh` |
+| Template extraction source classification | [docs/template-source-inventory.md](docs/template-source-inventory.md) |
 
 The Let's Encrypt overlay reads `LETSENCRYPT_*` vars from `.env`. Start
 from `.env.example` (uncomment the LE block) and follow
