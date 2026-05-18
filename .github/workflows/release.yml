@@ -96,7 +96,7 @@ jobs:
       - name: Validate inputs and capture previous tag
         id: prev_tag
         run: |
-          if ! [[ "$DISTRO_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?(-[A-Za-z0-9.-]+)?$ ]]; then
+          if ! [[ "$DISTRO_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.-]+)?$ ]]; then
             echo "ERROR: distro_version '$DISTRO_VERSION' does not match expected semver shape." >&2
             exit 1
           fi
