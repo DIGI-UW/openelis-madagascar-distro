@@ -84,6 +84,8 @@ to this country repo:
 
 - `.env`
 - `.env.letsencrypt`
+- `.env.local`
+- `.env.*.local`
 - `compose.yaml`
 - `compose.override.yaml`
 - `compose.override.yml`
