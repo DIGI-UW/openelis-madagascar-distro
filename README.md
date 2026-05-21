@@ -1,19 +1,19 @@
-# openelis-madagascar-distro
+# openelis-distro-png
 
-OpenELIS Global deployment package for Madagascar — Docker Compose stack
-with the Madagascar configuration profile, analyzer bridge, and lab-data
+OpenELIS Global deployment package for Papua New Guinea — Docker Compose stack
+with the Papua New Guinea configuration profile, analyzer bridge, and lab-data
 converters bundled.
 
 This repo IS the deployment artifact: every tagged release is consumable
-as a [GitHub auto-archive](https://github.com/DIGI-UW/openelis-madagascar-distro/releases),
+as a [GitHub auto-archive](https://github.com/DIGI-UW/openelis-distro-png/releases),
 a `git clone --branch <tag>`, or a downloaded Release tarball. Ozone-style
 consumers and direct implementers all use the same versioned tag.
 
 ## Quickstart (localhost demo)
 
 ```bash
-git clone https://github.com/DIGI-UW/openelis-madagascar-distro
-cd openelis-madagascar-distro
+git clone https://github.com/DIGI-UW/openelis-distro-png
+cd openelis-distro-png
 docker compose up -d
 ```
 
@@ -118,8 +118,8 @@ placement.
 
 ## Catalog configuration
 
-`configs/configuration/backend/<domain>/madagascar-*.csv` are
-Madagascar's production catalog data — lab roles, tests, sample types,
+`configs/configuration/backend/<domain>/png-*.csv` are
+Papua New Guinea's production catalog data — lab roles, tests, sample types,
 test sections, test results, dictionary entries, and address hierarchy
 levels/values. OE auto-imports them at startup via
 `ConfigurationInitializationService`, with SHA-256 checksum tracking
@@ -127,7 +127,7 @@ that skips re-import on subsequent boots if file content is unchanged.
 Imports are idempotent (upsert by domain key), so renaming or
 re-running is safe.
 
-The `madagascar-` prefix marks these as Madagascar-specific data, not
+The `png-` prefix marks these as Papua New Guinea-specific data, not
 generic samples (the prior `example-` prefix was misleading: the
 loader doesn't filter by filename prefix — any `*.csv` in each domain
 subdirectory is processed).
@@ -138,7 +138,7 @@ subdirectory overlays
 ([ConfigurationInitializationService.java:125-145][cis]) — set the
 env var to the customer's instance id and place that customer's CSVs
 under `<domain>/<instance-id>/*.csv` to scope them. Not implemented
-here because this artifact is Madagascar-specific.
+here because this artifact is Papua New Guinea-specific.
 
 [cis]: https://github.com/I-TECH-UW/OpenELIS-Global-2/blob/develop/src/main/java/org/openelisglobal/configuration/service/ConfigurationInitializationService.java#L125-L145
 
@@ -146,8 +146,8 @@ here because this artifact is Madagascar-specific.
 
 The dev workspace, Playwright E2E tests, build overlays, and dev
 orchestration scripts live in the sibling
-[openelis-madagascar-test-harness][harness] repo. The harness consumes
+[openelis-png-test-harness][harness] repo. The harness consumes
 this distro at a tag (or as a sibling clone) and adds a mock analyzer +
 test runner on top.
 
-[harness]: https://github.com/DIGI-UW/openelis-madagascar-test-harness
+[harness]: https://github.com/DIGI-UW/openelis-png-test-harness
