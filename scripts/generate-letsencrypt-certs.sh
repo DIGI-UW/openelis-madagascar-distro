@@ -54,7 +54,7 @@ done
 
 mkdir -p ./configs/letsencrypt ./configs/nginx/certbot
 
-DOMAINS_INPUT="${LETSENCRYPT_DOMAINS:-${LETSENCRYPT_DOMAIN:-mgtest.openelis-global.org}}"
+DOMAINS_INPUT="${LETSENCRYPT_DOMAINS:-${LETSENCRYPT_DOMAIN:-mgtest.openelis-global.org,bridge.mgtest.openelis-global.org}}"
 DOMAINS_INPUT="${DOMAINS_INPUT//,/ }"
 read -r -a RAW_DOMAINS <<<"$DOMAINS_INPUT"
 if [ "${#RAW_DOMAINS[@]}" -eq 0 ]; then
