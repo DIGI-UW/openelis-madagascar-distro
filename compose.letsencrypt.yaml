@@ -18,7 +18,7 @@ services:
             - ./configs/letsencrypt:/etc/letsencrypt:ro
             - ./configs/nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
         environment:
-            - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS:-mgtest.openelis-global.org}
+            - LETSENCRYPT_DOMAINS=${LETSENCRYPT_DOMAINS:-mgtest.openelis-global.org,bridge.mgtest.openelis-global.org}
             - LETSENCRYPT_PRIMARY_DOMAIN=${LETSENCRYPT_PRIMARY_DOMAIN:-mgtest.openelis-global.org}
             - LETSENCRYPT_CERT_NAME=${LETSENCRYPT_CERT_NAME:-mgtest.openelis-global.org}
         entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]
