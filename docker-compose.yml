@@ -240,6 +240,11 @@ services:
             - bridge-state:/data/openelis-analyzer-bridge
         environment:
             SPRING_PROFILES_ACTIVE: dev
+            # Bridge admin/upload UI Basic Auth. Aligned with OE admin so the
+            # distro ships one credential pair and closes the bridge/changeme
+            # default. Keys per bridge SecurityConfig (BRIDGE_AUTH_PASSWORD is a no-op).
+            BRIDGE_SECURITY_USERNAME: admin
+            BRIDGE_SECURITY_PASSWORD: ${OE_ADMIN_PASSWORD:-adminADMIN!}
             BRIDGE_FILE_ENABLED: "true"
             # Point the bridge at the named volume mount. Must match the
             # volume mount path above. Spring Boot maps this env var to the
