@@ -130,6 +130,10 @@
           "childMenus": []
         },
         {
+          "elementId": "menu_results_unified",
+          "childMenus": []
+        },
+        {
           "elementId": "menu_results_patient",
           "childMenus": []
         },
