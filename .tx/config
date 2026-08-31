@@ -1,0 +1,12 @@
+
+[main]
+host = https://www.transifex.com
+
+[o:openmrs:p:madagascar-1:r:enjson]
+file_filter            = configs/translation/<lang>.json
+source_file            = configs/translation/en.json
+source_lang            = en
+type                   = KEYVALUEJSON
+replace_edited_strings = false
+keep_translations      = true
+

@@ -1,5 +1,5 @@
 description,localAbbreviation,domain,isActive,sortOrder,localization:en,localization:fr,localization:es,localization:id
-Cervical Swab,CERV,H,Y,50,Cervical Swab,Écouvillon Cervical,,
+Cervical Swab,CERV,H,Y,50,Cervical Swab,Écouvillon Cervical,Cerv Sswab es,Cerve Swab ID
 Vaginal Swab,VAGS,H,Y,51,Vaginal Swab,Écouvillon Vaginal,,
 Endocervical Swab,ENDC,H,Y,52,Endocervical Swab,Écouvillon Endocervical,,
 Nasal Swab,NAS,H,Y,53,Nasal Swab,Écouvillon Nasal,,

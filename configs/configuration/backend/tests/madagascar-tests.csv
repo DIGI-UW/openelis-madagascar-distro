@@ -1,5 +1,5 @@
 testName,testSection,sampleType,loinc,isActive,isOrderable,sortOrder,unitOfMeasure,localization:en,localization:fr,localization:es,localization:id
-Complete Blood Count,Hematology,Whole Blood,58410-2,Y,Y,1,,Complete Blood Count,Numération Formule Sanguine,,
+Complete Blood Count,Hematology,Whole Blood,58410-2,Y,Y,1,,Complete Blood Count,Numération Formule Sanguine,BLODD ES,BLOOD ID
 Hemoglobin,Hematology,Whole Blood|Serum,718-7,Y,Y,2,g/dL,Hemoglobin,Hémoglobine,,
 Hematocrit,Hematology,Whole Blood,20570-8,Y,Y,3,%,Hematocrit,Hématocrite,,
 White Blood Cell Count,Hematology,Whole Blood,6690-2,Y,Y,4,10*3/uL,White Blood Cell Count,Numération des Globules Blancs,,
