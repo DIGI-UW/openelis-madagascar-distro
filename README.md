@@ -107,6 +107,39 @@ The Let's Encrypt overlay reads `LETSENCRYPT_*` vars from `.env`. Start
 from `.env.example` (uncomment the LE block) and follow
 `docs/letsencrypt.md` for the full walkthrough.
 
+## Analyzer result delivery
+
+The bridge holds every result it receives until OpenELIS accepts it. A result
+that cannot be delivered is kept whole, with a reason, rather than dropped, so
+an OpenELIS outage or a restart delays results instead of losing them.
+
+Two settings in `docker-compose.yml` matter for that and are deliberately
+paired:
+
+| Variable | Purpose |
+|---|---|
+| `ANALYZER_FORWARD_URI` | Where results are delivered |
+| `ANALYZER_FORWARD_HEALTH_URI` | Where the bridge checks OpenELIS is up |
+
+**They must name the same host.** A bridge that health-checks one host and
+delivers to another reports healthy while every delivery fails. That is how an
+outage went unnoticed in Madagascar, and the bridge now logs an error at startup
+if the two diverge. Override both together, or neither.
+
+Undelivered results live in the `bridge-state` volume alongside the file
+processing state. Losing that volume loses results OpenELIS has not accepted
+yet, so include it in backups.
+
+To see what the bridge is holding:
+
+```bash
+curl -ku "admin:$OE_ADMIN_PASSWORD" https://localhost:8442/admin/outbox/stats
+curl -ku "admin:$OE_ADMIN_PASSWORD" "https://localhost:8442/admin/outbox?state=DMQ"
+```
+
+The bridge README documents the queue states, the failure reasons and how to
+retry: https://github.com/DIGI-UW/openelis-analyzer-bridge#the-delivery-guarantee
+
 ## Lab-data utilities
 
 `scripts/converters/` holds standalone host-side preprocessors that
