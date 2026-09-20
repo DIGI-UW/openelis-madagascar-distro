@@ -100,8 +100,17 @@ services:
             - SSL_KEYSTORE_PASSWORD=${SSL_KEYSTORE_PASSWORD:-kspass}
             - SSL_TRUSTSTORE_PATH=${SSL_TRUSTSTORE_PATH:-/etc/openelis-global/truststore}
             - SSL_TRUSTSTORE_PASSWORD=${SSL_TRUSTSTORE_PASSWORD:-tspass}
-            # Bridge HTTPS API (same Docker network). OE pushes analyzer bindings here at startup.
+            # Bridge HTTPS API (same Docker network). OpenELIS reads the bridge's
+            # profile catalog and manages analyzer connections through it.
+            #
+            # The credentials are required, not optional: without them the analyzer
+            # type catalog fails with "Analyzer Bridge username must be configured"
+            # and no analyzer can be configured through the UI. They are the bridge's
+            # own Basic auth pair, which the bridge service below derives from the
+            # same OE admin password.
             - ANALYZER_BRIDGE_URL=https://bridge.openelis.org:8443
+            - ANALYZER_BRIDGE_USERNAME=${ANALYZER_BRIDGE_USERNAME:-admin}
+            - ANALYZER_BRIDGE_PASSWORD=${OE_ADMIN_PASSWORD:-adminADMIN!}
         volumes:
             -  key_trust-store-volume:/etc/openelis-global
             -  lucene_index-vol:/var/lib/lucene_index
