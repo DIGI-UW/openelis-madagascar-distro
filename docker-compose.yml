@@ -236,7 +236,7 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:3.1.1
+        image: itechuw/openelis-analyzer-bridge:3.2.0
         platform: linux/amd64
         depends_on:
             certs:
