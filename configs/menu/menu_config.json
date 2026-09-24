@@ -46,36 +46,7 @@
         }
       ]
     },
-     {
-      "elementId": "menu_storage",
-      "childMenus": [ 
-        {
-          "elementId": "menu_storage_management",
-          "childMenus": ["*"]
-        },
-        {
-          "elementId": "menu_freezer_monitoring",
-          "childMenus": ["*"]
-        }
-      ]
-    },
-     {
-      "elementId": "menu_sample_shipment",
-      "childMenus": ["*"]
-    },
-     {
-      "elementId": "menu_eqa_tests",
-      "childMenus": ["*"]
-    },
-    
-     {
-      "elementId": "menu_eqa_mgmt",
-      "childMenus": ["*"]
-    },
-     {
-      "elementId": "menu_alerts_standalone",
-      "childMenus": ["*"]
-    },
+   
      {
       "elementId": "menu_analyzers",
       "childMenus": [
@@ -281,20 +252,6 @@
     {
       "elementId": "menu_administration",
       "childMenus": []
-    },
-    {
-      "elementId": "menu_aliquot",
-      "childMenus": []
-    },
-    {
-      "elementId": "menu_help",
-      "childMenus": [
-        {
-          "elementId": "menu_help_user_manual",
-          "childMenus": []
-        }
-      ]
     }
   ]
 }
-
