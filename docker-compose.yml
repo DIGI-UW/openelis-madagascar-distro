@@ -236,7 +236,7 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:3.2.0
+        image: itechuw/openelis-analyzer-bridge:3.2.1
         platform: linux/amd64
         depends_on:
             certs:
@@ -260,6 +260,9 @@ services:
             - bridge-state:/data/openelis-analyzer-bridge
         environment:
             SPRING_PROFILES_ACTIVE: dev
+            # Analyzers send ASTM test times without an offset; the bridge reads them in this zone,
+            # so it must be the site's (as for the database and OpenELIS services).
+            TZ: Indian/Antananarivo
             # Bridge admin/upload UI Basic Auth. Aligned with OE admin so the
             # distro ships one credential pair and closes the bridge/changeme
             # default. Keys per bridge SecurityConfig (BRIDGE_AUTH_PASSWORD is a no-op).
