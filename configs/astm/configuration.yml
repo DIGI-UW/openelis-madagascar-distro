@@ -1,55 +1,54 @@
 # OpenELIS Analyzer Bridge Configuration
 # Reference: https://github.com/DIGI-UW/openelis-analyzer-bridge
-#
-# Only the keys the bridge actually binds are set here: bridge.* and
-# org.itech.ahb.*. Everything else is supplied by docker-compose.yml as
-# environment variables, which take precedence over this file.
+# Feature: 011-madagascar-analyzer-integration
 
 org:
   itech:
     ahb:
+      # forward-astm-server:
+      #   hostName: astm-http-bridge2
+      #   port: 12001
       forward-http-server:
-        # The bridge appends /fhir and POSTs the normalized result contract.
-        #
-        # healthUri must stay on the same host as uri. A health check that probes a
-        # different host reports healthy while every delivery fails, which is how an
-        # outage went unnoticed in Madagascar. docker-compose.yml sets both from one
-        # pair of environment variables for that reason; these are only the fallbacks.
+        # HttpForwardingRouter appends /astm, /hl7, /csv (CI harness pattern)
         uri: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
-        healthUri: https://openelisglobal-webapp:8443/OpenELIS-Global/health
-        healthMethod: GET
         username: admin
         password: adminADMIN!
-
+        healthUri: https://openelisglobal-webapp:8443/OpenELIS-Global/health
+        healthMethod: GET
 management:
   health:
     httpforward:
       enabled: true
-    # Reports the delivery queue: UP while results are queued, since riding out an
-    # OpenELIS outage is what the outbox is for, and DOWN only when the store cannot
-    # be read or had to be replaced.
-    outbox:
-      enabled: true
+
+openelis:
+  url: https://openelisglobal-webapp:8443/OpenELIS-Global/analyzer
+  timeout: 30000
+  ssl:
+    verify: false  # Development only - uses self-signed certs
+
+astm:
+  # Must match container listen port (bridge listens on 12001 in published image)
+  port: 12001
+  bind: 0.0.0.0
+  timeout: 30000
 
 logging:
-  level:
-    # INFO, not DEBUG or TRACE: the vendored ASTM library logs whole clinical
-    # messages at TRACE, and DEBUG is noisy enough to bury delivery failures.
-    org.itech: INFO
+  level: DEBUG
 
 # =============================================================================
 # Analyzer-Specific RS232 Serial Configuration Reference
 # =============================================================================
-# Bridge stores runtime settings in its saved, profile-pinned connections.
-# OpenELIS manages the lab-facing reference and workflow. The settings below
-# are a connection reference, not a separate runtime configuration source.
+# Note: RS232 serial port configuration is stored in the OpenELIS database
+# (serial_port_configuration table) and managed through the Analyzer Dashboard.
+# The settings below serve as documentation for supported analyzers.
 #
-# For serial-to-TCP converters (e.g. Moxa, Lantronix), configure the converter
+# For serial-to-TCP converters (e.g., Moxa, Lantronix), configure the converter
 # to match these RS232 parameters, then configure this bridge for TCP.
 # =============================================================================
 
 # Mindray BA-88A Semi-automatic Biochemistry Analyzer
 # Protocol: ASTM LIS2-A2 over RS232
+# Milestone: M6
 # mindray-ba88a:
 #   serial:
 #     port: /dev/ttyUSB0       # Linux serial port (or COM1 on Windows)
@@ -69,3 +68,8 @@ logging:
 #     - HDL-C                  # HDL Cholesterol
 #     - CREA                   # Creatinine
 #     - TP                     # Total Protein
+
+
+
+
+

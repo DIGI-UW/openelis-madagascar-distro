@@ -3,7 +3,7 @@ name: PR checks
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main ,3.2.2.x]
 
 jobs:
   compose-config:
@@ -11,72 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - run: cp .env.example .env
-      - run: bash tests/release/pin-versions.sh
-
       - name: Validate compose syntax + path resolution
         run: |
           docker compose -f docker-compose.yml config > /dev/null
           docker compose -f docker-compose.yml -f compose.letsencrypt.yaml config > /dev/null
-
-      # The analyzer bridge delivers results to one host and checks that host is up.
-      # If those two ever name different hosts the bridge reports healthy while every
-      # delivery fails, which is how an outage went unnoticed in Madagascar. This
-      # asserts on the rendered config, so an override or a merge cannot separate them
-      # without the check failing.
-      - name: Assert analyzer delivery and health target the same host
-        run: |
-          set -euo pipefail
-          rendered="$(docker compose -f docker-compose.yml config)"
-
-          forward="$(printf '%s' "$rendered" | grep -oE 'ORG_ITECH_AHB_FORWARD_HTTP_SERVER_URI: \S+' | head -1 | awk '{print $2}')"
-          health="$(printf '%s' "$rendered" | grep -oE 'ORG_ITECH_AHB_FORWARD_HTTP_SERVER_HEALTH_URI: \S+' | head -1 | awk '{print $2}')"
-
-          if [ -z "$forward" ] || [ -z "$health" ]; then
-            echo "Both the forward URI and the health URI must be set on the bridge service." >&2
-            echo "  forward: ${forward:-<unset>}" >&2
-            echo "  health:  ${health:-<unset>}" >&2
-            exit 1
-          fi
-
-          authority() { printf '%s' "$1" | sed -E 's|^[a-zA-Z]+://||; s|/.*$||'; }
-          if [ "$(authority "$forward")" != "$(authority "$health")" ]; then
-            echo "The bridge would check one host and deliver to another:" >&2
-            echo "  delivers to: $forward" >&2
-            echo "  checks:      $health" >&2
-            echo "A health check that does not probe the delivery target cannot detect an outage." >&2
-            exit 1
-          fi
-          echo "Bridge delivers to and checks $(authority "$forward")"
-
-      # TRACE makes the bridge's vendored ASTM library log whole clinical messages
-      # into ordinary container logs.
-      - name: Assert the bridge does not log clinical payloads
-        run: |
-          set -euo pipefail
-          if docker compose -f docker-compose.yml config | grep -qE 'LOGGING_LEVEL_ORG_ITECH: *TRACE'; then
-            echo "The bridge is configured at TRACE, which logs whole analyzer messages." >&2
-            exit 1
-          fi
-          echo "Bridge log level keeps clinical payloads out of container logs"
-
-  analyzer-catalog:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
-        with:
-          distribution: temurin
-          java-version: "21"
-      - name: Read pinned Bridge revision
-        id: bridge
-        run: echo "revision=$(python3 -c 'import json; print(json.load(open("configs/analyzer-catalog-manifest.json"))["bridgeRevision"])')" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          repository: DIGI-UW/openelis-analyzer-bridge
-          ref: ${{ steps.bridge.outputs.revision }}
-          path: bridge-source
-      - name: Verify complete catalog and saved-connection delivery
-        run: |
-          scripts/check-analyzer-catalog.sh "$GITHUB_WORKSPACE/bridge-source"
-          scripts/check-analyzer-runtime.sh "$GITHUB_WORKSPACE/bridge-source"

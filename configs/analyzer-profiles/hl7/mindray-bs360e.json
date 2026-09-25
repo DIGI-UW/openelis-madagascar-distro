@@ -1,138 +1,79 @@
 {
-  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
-  "profileMeta" : {
-    "id" : "mindray-bs360e",
-    "version" : "2.0.0",
-    "displayName" : "Mindray BS-360E",
-    "confidence" : "HIGH"
+  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
+  "profileMeta": {
+    "id": "mindray-bs360e",
+    "version": "1.2.0",
+    "displayName": "Mindray BS-360E",
+    "confidence": "HIGH"
   },
-  "analyzer_name" : "Mindray BS-360E",
-  "manufacturer" : "Mindray",
-  "category" : "CHEMISTRY",
-  "protocol" : {
-    "name" : "HL7",
-    "version" : "2.3.1"
+  "analyzer_name": "Mindray BS-360E",
+  "manufacturer": "Mindray",
+  "category": "CHEMISTRY",
+  "protocol": {
+    "name": "HL7",
+    "version": "2.3.1"
   },
-  "identifier_pattern" : "MINDRAY.*BS.?360E|BS.?360E",
-  "transport" : [ "TCP/IP" ],
-  "transport_config" : {
-    "TCP/IP" : {
-      "default_port" : 6001,
-      "framing" : "MLLP"
+  "identifier_pattern": "MINDRAY.*BS.?360E|BS.?360E",
+  "transport": [
+    "TCP/IP"
+  ],
+  "transport_config": {
+    "TCP/IP": {
+      "default_port": 6001,
+      "framing": "MLLP"
     }
   },
-  "msh3_pattern" : "MINDRAY",
-  "default_test_mappings" : [ {
-    "test_code" : "GLU",
-    "test_name_hint" : "Glucose",
-    "loinc" : "2345-7",
-    "unit" : "mg/dL"
-  }, {
-    "test_code" : "CREA",
-    "test_name_hint" : "Creatinine",
-    "loinc" : "2160-0",
-    "unit" : "mg/dL"
-  }, {
-    "test_code" : "ALT",
-    "test_name_hint" : "Alanine Aminotransferase",
-    "loinc" : "1742-6",
-    "unit" : "U/L"
-  }, {
-    "test_code" : "AST",
-    "test_name_hint" : "Aspartate Aminotransferase",
-    "loinc" : "1920-8",
-    "unit" : "U/L"
-  }, {
-    "test_code" : "ALB",
-    "test_name_hint" : "Albumin",
-    "loinc" : "1751-7",
-    "unit" : "g/dL"
-  }, {
-    "test_code" : "TP",
-    "test_name_hint" : "Total Protein",
-    "loinc" : "2885-2",
-    "unit" : "g/dL"
-  }, {
-    "test_code" : "TBIL",
-    "test_name_hint" : "Total Bilirubin",
-    "loinc" : "1975-2",
-    "unit" : "mg/dL"
-  }, {
-    "test_code" : "UREA",
-    "test_name_hint" : "Blood Urea Nitrogen",
-    "loinc" : "3094-0",
-    "unit" : "mg/dL"
-  } ],
-  "configDefaults" : {
-    "dataFlow" : "RESULTS_ONLY",
-    "transport" : "TCP/IP",
-    "connectionRole" : "SERVER",
-    "aggregationMode" : "PER_MESSAGE"
-  },
-  "schemaVersion" : "1.0",
-  "communication" : {
-    "mode" : "ANALYZER_INITIATED",
-    "supports_lis_initiated" : false
-  },
-  "capabilities" : {
-    "inboundResults" : true,
-    "outboundOrders" : false,
-    "connectionTest" : true
-  },
-  "controlResultRecognition" : {
-    "mode" : "RULES",
-    "rules" : { }
-  },
-  "connectionFields" : [ {
-    "key" : "dataFlow",
-    "labelKey" : "analyzer.setup.connect.dataFlow",
-    "inputKind" : "SELECT",
-    "required" : true,
-    "choices" : [ {
-      "value" : "RESULTS_ONLY",
-      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
-    } ]
-  }, {
-    "key" : "transport",
-    "labelKey" : "analyzer.connection.field.transport",
-    "inputKind" : "SELECT",
-    "required" : true,
-    "choices" : [ {
-      "value" : "TCP/IP",
-      "labelKey" : "analyzer.connection.transport.TCP/IP"
-    } ]
-  }, {
-    "key" : "host",
-    "labelKey" : "analyzer.connection.field.host",
-    "helpTextKey" : "analyzer.connection.field.host.help",
-    "inputKind" : "TEXT",
-    "required" : false,
-    "choices" : [ ],
-    "visibleWhen" : {
-      "fieldKey" : "transport",
-      "operator" : "EQUALS",
-      "value" : "TCP/IP"
+  "msh3_pattern": "MINDRAY",
+  "default_test_mappings": [
+    {
+      "test_code": "GLU",
+      "test_name_hint": "Glucose",
+      "loinc": "2345-7",
+      "unit": "mg/dL"
+    },
+    {
+      "test_code": "CREA",
+      "test_name_hint": "Creatinine",
+      "loinc": "2160-0",
+      "unit": "mg/dL"
+    },
+    {
+      "test_code": "ALT",
+      "test_name_hint": "Alanine Aminotransferase",
+      "loinc": "1742-6",
+      "unit": "U/L"
+    },
+    {
+      "test_code": "AST",
+      "test_name_hint": "Aspartate Aminotransferase",
+      "loinc": "1920-8",
+      "unit": "U/L"
+    },
+    {
+      "test_code": "ALB",
+      "test_name_hint": "Albumin",
+      "loinc": "1751-7",
+      "unit": "g/dL"
+    },
+    {
+      "test_code": "TP",
+      "test_name_hint": "Total Protein",
+      "loinc": "2885-2",
+      "unit": "g/dL"
+    },
+    {
+      "test_code": "TBIL",
+      "test_name_hint": "Total Bilirubin",
+      "loinc": "1975-2",
+      "unit": "mg/dL"
+    },
+    {
+      "test_code": "UREA",
+      "test_name_hint": "Blood Urea Nitrogen",
+      "loinc": "3094-0",
+      "unit": "mg/dL"
     }
-  }, {
-    "key" : "senderId",
-    "labelKey" : "analyzer.connection.field.senderId",
-    "helpTextKey" : "analyzer.connection.field.senderId.help",
-    "inputKind" : "TEXT",
-    "required" : false,
-    "choices" : [ ],
-    "visibleWhen" : {
-      "fieldKey" : "transport",
-      "operator" : "EQUALS",
-      "value" : "TCP/IP"
-    }
-  } ],
-  "catalog" : {
-    "revision" : 1,
-    "source" : "SHIPPED",
-    "status" : "ACTIVE",
-    "publishedAt" : "2026-09-25T00:00:00Z",
-    "publishedBy" : "distribution",
-    "recognitionFingerprint" : "sha256:cee662b883620e88895b3ef0445c0d57a8856d5df1d1c0e65ebeace0066cf4c0",
-    "revisionFingerprint" : "sha256:e544e79e71c52c00b1911c1fd29c51d2e5f657b2afeab1ab6a25d86e0edaf294"
-  }
+  ],
+  "configDefaults": {},
+  "notes": "DUAL PROTOCOL SUPPORT: Per Mindray LIS Interface Manual, BS-360E supports BOTH HL7 v2.3.1 AND ASTM E1381-95. This default config uses HL7 mode. For ASTM mode, use astm/mindray-bs360e.json. Requires MLLP framing for HL7 mode. Seed matcher assumes dynamic sender identity from MSH-3/MSH-4 candidates. Real HL7 captures are still pending."
 }

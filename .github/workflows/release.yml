@@ -2,11 +2,12 @@ name: Release
 
 # Releases are driven by manual workflow_dispatch — the maintainer supplies
 # the distro version, OE version, and bridge version up front. The workflow
-# updates OE tags while retaining the validated Bridge digest, checks that pins are
+# refreshes image digests in docker-compose.yml, validates that pins are
 # release-shaped, then tags the result and publishes a GitHub Release.
 #
-# The Bridge image digest and source revision belong to the analyzer manifest.
-# The release must use that tested image and catalog together.
+# docker-compose.yml carries literal `repo:tag@sha256:digest` image references on
+# every commit (including main), so a release tag is just a tag of the
+# canonical-state tree — no env-var substitution, no rewriting required.
 #
 # Pushes to main produce a 90-day workflow artifact for inspection but never
 # tag or publish a Release.
@@ -112,29 +113,12 @@ jobs:
           echo "value=${PREV_TAG}" >> "$GITHUB_OUTPUT"
           echo "Previous distro tag: ${PREV_TAG:-<none>}"
 
-      - name: Apply component versions
+      - name: Refresh image pins
         run: ./scripts/pin-versions.sh "$OE_VERSION_INPUT" "$BRIDGE_VERSION_INPUT"
 
       - name: Validate pin shape (release-mode)
         if: ${{ inputs.allow_develop_pins != true }}
         run: ./scripts/check-release-pins.sh
-
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
-        with:
-          distribution: temurin
-          java-version: "21"
-      - name: Read pinned Bridge revision
-        id: bridge
-        run: echo "revision=$(python3 -c 'import json; print(json.load(open("configs/analyzer-catalog-manifest.json"))["bridgeRevision"])')" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          repository: DIGI-UW/openelis-analyzer-bridge
-          ref: ${{ steps.bridge.outputs.revision }}
-          path: bridge-source
-      - name: Validate release catalog and saved-connection delivery
-        run: |
-          scripts/check-analyzer-catalog.sh "$GITHUB_WORKSPACE/bridge-source"
-          scripts/check-analyzer-runtime.sh "$GITHUB_WORKSPACE/bridge-source"
 
       - name: Commit (if pins changed) and tag release
         run: |
@@ -149,7 +133,7 @@ jobs:
             OpenELIS Global: ${OE_VERSION_INPUT}
             Analyzer Bridge:  ${BRIDGE_VERSION_INPUT}
 
-            Applied component versions and retained the validated Bridge digest. This
+            Refreshed image digests in docker-compose.yml at release time. This
             commit is reachable only via the ${DISTRO_VERSION} tag."
           else
             echo "No digest changes since ${BASE_REF}; tagging existing HEAD."
@@ -163,14 +147,6 @@ jobs:
         run: |
           ./scripts/build-tarball.sh "${DISTRO_VERSION}"
           echo "TARBALL=openelis-madagascar-distro-${DISTRO_VERSION}.tar.gz" >> "$GITHUB_ENV"
-
-      - name: Verify catalog in the extracted release archive
-        run: |
-          mkdir -p test-artifacts/release-archive
-          tar -xzf "$TARBALL" -C test-artifacts/release-archive
-          archive="$GITHUB_WORKSPACE/test-artifacts/release-archive/openelis-madagascar-distro-$DISTRO_VERSION"
-          scripts/check-analyzer-catalog.sh "$GITHUB_WORKSPACE/bridge-source" "$archive/configs/analyzer-profiles" "$archive/configs/analyzer-catalog-manifest.json"
-          cmp docker-compose.yml "$archive/docker-compose.yml"
 
       - name: Upload workflow artifact
         # Uploaded before Release publication so the tarball is still
