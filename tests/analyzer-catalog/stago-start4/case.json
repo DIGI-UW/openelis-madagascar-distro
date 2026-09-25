@@ -1,0 +1,75 @@
+{
+  "sender": "SYNTHETIC-stago-start4",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-stago-start4-0",
+      "expected": [
+        {
+          "code": "PT",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "s"
+        },
+        {
+          "code": "INR",
+          "value": "11",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "APTT",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "s"
+        },
+        {
+          "code": "FIB",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "DDIMER",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "mg/L FEU"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-stago-start4-1",
+      "expected": [
+        {
+          "code": "PT",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "s"
+        },
+        {
+          "code": "INR",
+          "value": "11",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "APTT",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "s"
+        },
+        {
+          "code": "FIB",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "DDIMER",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "mg/L FEU"
+        }
+      ]
+    }
+  ]
+}

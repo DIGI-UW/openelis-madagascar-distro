@@ -1,0 +1,164 @@
+{
+  "phases": [
+    {
+      "file": "mock-results.xlsx",
+      "expected": [
+        {
+          "accession": "DEV01262000000000001",
+          "code": "VIH-1",
+          "value": "1520.5",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "DEV01262000000000002",
+          "code": "VIH-1",
+          "value": "45200",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "DEV01262000000000003",
+          "code": "VIH-1",
+          "value": "890.2",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "DEV01262000000000004",
+          "code": "IC",
+          "value": "0",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "CPOS",
+          "code": "VIH-1",
+          "value": "50000",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "CNEG",
+          "code": "VIH-1",
+          "value": "0",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "DEV01262000000000005",
+          "code": "VIH-1",
+          "value": "3200.8",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "DEV01262000000000007",
+          "code": "VIH-1",
+          "value": "15600.3",
+          "classification": "PATIENT"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-all-assays.xlsx",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-ALL-0",
+          "code": "VIH-1",
+          "value": "20",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-1",
+          "code": "HIV-1 LTR",
+          "value": "21",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-2",
+          "code": "IPC",
+          "value": "22",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-3",
+          "code": "IC",
+          "value": "23",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-4",
+          "code": "MS2",
+          "value": "24",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-5",
+          "code": "CHIKV",
+          "value": "25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-6",
+          "code": "CHIK",
+          "value": "26",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-7",
+          "code": "DENV",
+          "value": "27",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-8",
+          "code": "DENGUE",
+          "value": "28",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-9",
+          "code": "ZIKV",
+          "value": "29",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-10",
+          "code": "ZIKA",
+          "value": "30",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-11",
+          "code": "MPXV",
+          "value": "31",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-12",
+          "code": "Mpox",
+          "value": "32",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-13",
+          "code": "MPox",
+          "value": "33",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-14",
+          "code": "ORF1ab",
+          "value": "34",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-15",
+          "code": "N gene",
+          "value": "35",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ALL-16",
+          "code": "S gene",
+          "value": "36",
+          "classification": "PATIENT"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "phases": [
+    {
+      "file": "synthetic-phase-0.csv",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-0-0",
+          "code": "MTB-RIF",
+          "value": "1.25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-0-1",
+          "code": "RIF",
+          "value": "2.25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-0-2",
+          "code": "MTB-RIF-ULTRA",
+          "value": "3.25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-0-3",
+          "code": "HIV-VL",
+          "value": "4.25",
+          "classification": "PATIENT"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-phase-1.csv",
+      "expected": [
+        {
+          "accession": "CPOS-SYNTHETIC-1-0",
+          "code": "MTB-RIF",
+          "value": "1.25",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "CPOS-SYNTHETIC-1-1",
+          "code": "RIF",
+          "value": "2.25",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "CPOS-SYNTHETIC-1-2",
+          "code": "MTB-RIF-ULTRA",
+          "value": "3.25",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "CPOS-SYNTHETIC-1-3",
+          "code": "HIV-VL",
+          "value": "4.25",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

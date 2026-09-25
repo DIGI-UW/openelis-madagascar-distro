@@ -1,0 +1,137 @@
+{
+  "sender": "SYNTHETIC-horiba-pentra60",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-horiba-pentra60-0",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "PATIENT",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "PLT",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "NEUT",
+          "value": "15",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "LYMPH",
+          "value": "16",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "MONO",
+          "value": "17",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "EOS",
+          "value": "18",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "BASO",
+          "value": "19",
+          "classification": "PATIENT",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-horiba-pentra60-1",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "CONTROL",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "PLT",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "NEUT",
+          "value": "15",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "LYMPH",
+          "value": "16",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "MONO",
+          "value": "17",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "EOS",
+          "value": "18",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "BASO",
+          "value": "19",
+          "classification": "CONTROL",
+          "unit": "%"
+        }
+      ]
+    }
+  ]
+}

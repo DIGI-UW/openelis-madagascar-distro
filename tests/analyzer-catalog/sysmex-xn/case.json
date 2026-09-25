@@ -1,0 +1,173 @@
+{
+  "sender": "SYNTHETIC-sysmex-xn",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-sysmex-xn-0",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "PATIENT",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "MCV",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "fL"
+        },
+        {
+          "code": "MCH",
+          "value": "15",
+          "classification": "PATIENT",
+          "unit": "pg"
+        },
+        {
+          "code": "MCHC",
+          "value": "16",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "PLT",
+          "value": "17",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "NEUT",
+          "value": "18",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "LYMPH",
+          "value": "19",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "MONO",
+          "value": "20",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "EOS",
+          "value": "21",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "BASO",
+          "value": "22",
+          "classification": "PATIENT",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-sysmex-xn-1",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "CONTROL",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "MCV",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "fL"
+        },
+        {
+          "code": "MCH",
+          "value": "15",
+          "classification": "CONTROL",
+          "unit": "pg"
+        },
+        {
+          "code": "MCHC",
+          "value": "16",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "PLT",
+          "value": "17",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "NEUT",
+          "value": "18",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "LYMPH",
+          "value": "19",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "MONO",
+          "value": "20",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "EOS",
+          "value": "21",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "BASO",
+          "value": "22",
+          "classification": "CONTROL",
+          "unit": "%"
+        }
+      ]
+    }
+  ]
+}

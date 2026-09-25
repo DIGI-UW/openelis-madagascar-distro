@@ -1,0 +1,26 @@
+{
+  "phases": [
+    {
+      "file": "synthetic-phase-0.csv",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-0-0",
+          "code": "HIV ELISA",
+          "value": "1.25",
+          "classification": "PATIENT"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-phase-1.csv",
+      "expected": [
+        {
+          "accession": "POS-SYNTHETIC-1-0",
+          "code": "HIV ELISA",
+          "value": "Positive",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

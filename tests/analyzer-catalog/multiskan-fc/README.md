@@ -1,0 +1,1 @@
+Synthetic flat-table fixtures exercise the existing distro column contract and every retained mapped code, with patient/control classification and restart. Plate profiles additionally exercise empty numeric result fallback to interpretation. These are not captured vendor exports and do not prove native plate-grid conversion or GeneXpert RESULT TABLE block support.

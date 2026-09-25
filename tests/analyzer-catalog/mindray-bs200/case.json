@@ -1,0 +1,113 @@
+{
+  "sender": "MINDRAY",
+  "phases": [
+    {
+      "file": "phase-0.hl7",
+      "accession": "SYNTHETIC-mindray-bs200",
+      "expected": [
+        {
+          "code": "GLU",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "CREA",
+          "value": "11",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "ALT",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "U/L"
+        },
+        {
+          "code": "AST",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "U/L"
+        },
+        {
+          "code": "ALB",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "TP",
+          "value": "15",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "TBIL",
+          "value": "16",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "UREA",
+          "value": "17",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.hl7",
+      "accession": "QC-SYNTHETIC-mindray-bs200",
+      "expected": [
+        {
+          "code": "GLU",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "CREA",
+          "value": "11",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "ALT",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "U/L"
+        },
+        {
+          "code": "AST",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "U/L"
+        },
+        {
+          "code": "ALB",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "TP",
+          "value": "15",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "TBIL",
+          "value": "16",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "UREA",
+          "value": "17",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        }
+      ]
+    }
+  ]
+}

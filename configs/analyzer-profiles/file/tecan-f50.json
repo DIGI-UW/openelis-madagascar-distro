@@ -1,130 +1,104 @@
 {
-  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
-  "profileMeta": {
-    "id": "tecan-f50",
-    "version": "2.0.0",
-    "displayName": "Tecan Infinite F50",
-    "confidence": "MEDIUM_HIGH",
-    "manufacturer": "Tecan",
-    "validation_status": "PENDING - v2.0 updated for standard Magellan CSV export (comma-delimited with optional BOM). Internet research confirms Magellan uses comma-separated ASCII. Tab-delimited also supported via PlateGridNormalizer auto-detection."
+  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
+  "profileMeta" : {
+    "id" : "tecan-f50",
+    "version" : "2.0.0",
+    "displayName" : "Tecan Infinite F50",
+    "confidence" : "MEDIUM_HIGH",
+    "manufacturer" : "Tecan"
   },
-  "category": "IMMUNOLOGY",
-  "protocol": {
-    "name": "FILE",
-    "format": "CSV"
+  "category" : "IMMUNOLOGY",
+  "protocol" : {
+    "name" : "FILE",
+    "format" : "CSV"
   },
-  "supported_extensions": [
-    ".csv",
-    ".tsv",
-    ".txt",
-    ".xlsx"
-  ],
-  "column_mapping": {
-    "WellPosition": "position",
-    "SampleID": "sampleId",
-    "OD_450": "result",
-    "OD_620": "referenceOD",
-    "CorrectedOD": "correctedOD",
-    "Interpretation": "interpretation",
-    "TestCode": "testCode"
+  "supported_extensions" : [ ".csv", ".tsv", ".txt", ".xlsx" ],
+  "column_mapping" : {
+    "WellPosition" : "position",
+    "SampleID" : "sampleId",
+    "OD_450" : "result",
+    "Interpretation" : "interpretation",
+    "TestCode" : "testCode"
   },
-  "locale_support": {
-    "description": "Standard Magellan export uses period decimal separator and comma delimiter. French locale variant uses semicolons as delimiter and comma as decimal separator.",
-    "standard": {
-      "delimiter": ",",
-      "decimal_separator": "."
-    },
-    "french_csv": {
-      "delimiter": ";",
-      "decimal_separator": ","
-    }
+  "default_test_mappings" : [ {
+    "test_code" : "HIV ELISA",
+    "test_name_hint" : "HIV ELISA (OD)",
+    "loinc" : "68961-2",
+    "unit" : "S/CO"
+  } ],
+  "configDefaults" : {
+    "fileFormat" : "CSV",
+    "delimiter" : ",",
+    "hasHeader" : true,
+    "dataFlow" : "RESULTS_ONLY",
+    "filePattern" : "*.{csv,CSV,tsv,TSV,txt,TXT,xlsx,XLSX}"
   },
-  "layouts": {
-    "plate_grid": {
-      "description": "Standard Magellan ASCII export: metadata rows (Application, Instrument, Method, etc.), then header row (<> or empty, 1-12), then 8x12 OD grid. Comma-separated, may include UTF-8 BOM.",
-      "metadata_rows": [
-        "Application",
-        "Instrument",
-        "Method",
-        "Date",
-        "Time",
-        "Wavelength",
-        "Plate"
-      ],
-      "grid_rows": 8,
-      "grid_cols": 12,
-      "row_labels": [
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H"
-      ]
-    },
-    "well_per_row": {
-      "description": "One row per well with SampleID, OD values (custom site template)",
-      "columns": [
-        "WellPosition",
-        "SampleID",
-        "OD_450",
-        "OD_620",
-        "CorrectedOD",
-        "Interpretation"
-      ]
-    }
+  "schemaVersion" : "1.0",
+  "capabilities" : {
+    "inboundResults" : true,
+    "outboundOrders" : false,
+    "connectionTest" : true
   },
-  "default_test_mappings": [
-    {
-      "test_code": "HIV ELISA",
-      "test_name_hint": "HIV ELISA (OD)",
-      "loinc": "68961-2",
-      "unit": "S/CO"
-    }
-  ],
-  "configDefaults": {
-    "fileFormat": "CSV",
-    "delimiter": ",",
-    "hasHeader": true,
-    "qcRules": [
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "NEG",
-        "isActive": true,
-        "sortOrder": 1
+  "connectionFields" : [ {
+    "key" : "dataFlow",
+    "labelKey" : "analyzer.setup.connect.dataFlow",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RESULTS_ONLY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
+    } ]
+  }, {
+    "key" : "directory",
+    "labelKey" : "analyzer.connection.field.directory",
+    "inputKind" : "FILE_PATH",
+    "required" : true,
+    "choices" : [ ]
+  }, {
+    "key" : "filePattern",
+    "labelKey" : "analyzer.connection.field.filePattern",
+    "helpTextKey" : "analyzer.connection.field.filePattern.help",
+    "inputKind" : "TEXT",
+    "required" : true,
+    "choices" : [ ]
+  } ],
+  "result_value_order" : [ "result", "interpretation" ],
+  "controlResultRecognition" : {
+    "mode" : "RULES",
+    "rules" : {
+      "control-rule-1" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "NEG"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "POS",
-        "isActive": true,
-        "sortOrder": 2
+      "control-rule-2" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "POS"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "NC",
-        "isActive": true,
-        "sortOrder": 3
+      "control-rule-3" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "NC"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "PC",
-        "isActive": true,
-        "sortOrder": 4
+      "control-rule-4" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "PC"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "BLANC",
-        "isActive": true,
-        "sortOrder": 5
+      "control-rule-5" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "BLANC"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "BLANK",
-        "isActive": true,
-        "sortOrder": 6
+      "control-rule-6" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "BLANK"
       }
-    ]
+    }
+  },
+  "catalog" : {
+    "revision" : 1,
+    "source" : "SHIPPED",
+    "status" : "ACTIVE",
+    "publishedAt" : "2026-09-25T00:00:00Z",
+    "publishedBy" : "distribution",
+    "recognitionFingerprint" : "sha256:21c983bc009e78fc20a1d788f3a90b63ea1c057e27da582e81c50547edd865a4",
+    "revisionFingerprint" : "sha256:4aada59c9d5ac4d6e8c3806c730968945f26fa672312d488e0a8f65e12b87103"
   }
 }

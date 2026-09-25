@@ -1,0 +1,4 @@
+WellPosition;SampleID;Abs;Interpretation;TestCode
+;POS-SYNTHETIC-1-0;;Positive;HIV ELISA
+;POS-SYNTHETIC-1-1;;Positive;Dengue IgG
+;POS-SYNTHETIC-1-2;;Positive;Dengue IgM

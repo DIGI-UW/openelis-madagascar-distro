@@ -1,0 +1,307 @@
+{
+  "sender": "SYNTHETIC-genexpert-astm",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-genexpert-astm-0",
+      "expected": [
+        {
+          "code": "MTB",
+          "value": "10",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "MTB-RIF",
+          "value": "11",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "RIF",
+          "value": "12",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "COVID19",
+          "value": "13",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "SARSCOV2",
+          "value": "14",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "SARS-CoV-2",
+          "value": "15",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "Xpress",
+          "value": "16",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "HIV-VL",
+          "value": "17",
+          "classification": "PATIENT",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "HIV",
+          "value": "18",
+          "classification": "PATIENT",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "HIV-1 Viral",
+          "value": "19",
+          "classification": "PATIENT",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "VL",
+          "value": "20",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "HIV-1 Qual",
+          "value": "21",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "HIV-1 DBS",
+          "value": "22",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "HBV",
+          "value": "23",
+          "classification": "PATIENT",
+          "unit": "IU/mL"
+        },
+        {
+          "code": "HCV Viral",
+          "value": "24",
+          "classification": "PATIENT",
+          "unit": "IU/mL"
+        },
+        {
+          "code": "HPV HR",
+          "value": "25",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "HPV 16_18-45",
+          "value": "26",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "CT",
+          "value": "27",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "NG",
+          "value": "28",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "EV",
+          "value": "29",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "CDIFF",
+          "value": "30",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "MRSA",
+          "value": "31",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "SA",
+          "value": "32",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "TV",
+          "value": "33",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "VANA",
+          "value": "34",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "VANB",
+          "value": "35",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "Mpox",
+          "value": "36",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "WB",
+          "value": "37",
+          "classification": "PATIENT"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-genexpert-astm-1",
+      "expected": [
+        {
+          "code": "MTB",
+          "value": "10",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "MTB-RIF",
+          "value": "11",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "RIF",
+          "value": "12",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "COVID19",
+          "value": "13",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "SARSCOV2",
+          "value": "14",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "SARS-CoV-2",
+          "value": "15",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "Xpress",
+          "value": "16",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HIV-VL",
+          "value": "17",
+          "classification": "CONTROL",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "HIV",
+          "value": "18",
+          "classification": "CONTROL",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "HIV-1 Viral",
+          "value": "19",
+          "classification": "CONTROL",
+          "unit": "copies/mL"
+        },
+        {
+          "code": "VL",
+          "value": "20",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HIV-1 Qual",
+          "value": "21",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HIV-1 DBS",
+          "value": "22",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HBV",
+          "value": "23",
+          "classification": "CONTROL",
+          "unit": "IU/mL"
+        },
+        {
+          "code": "HCV Viral",
+          "value": "24",
+          "classification": "CONTROL",
+          "unit": "IU/mL"
+        },
+        {
+          "code": "HPV HR",
+          "value": "25",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HPV 16_18-45",
+          "value": "26",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "CT",
+          "value": "27",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "NG",
+          "value": "28",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "EV",
+          "value": "29",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "CDIFF",
+          "value": "30",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "MRSA",
+          "value": "31",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "SA",
+          "value": "32",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "TV",
+          "value": "33",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "VANA",
+          "value": "34",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "VANB",
+          "value": "35",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "Mpox",
+          "value": "36",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "WB",
+          "value": "37",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

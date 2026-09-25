@@ -7,10 +7,9 @@
 #   ./scripts/pin-versions.sh 3.2.1.7 3.0.2         # bump OE + bridge
 #   ./scripts/pin-versions.sh develop develop       # both back to develop
 #
-# This script only rewrites the human-readable tag (`repo:tag`); it does
-# NOT append `@sha256:<digest>`. Tags like `3.2.1.6` are treated as fixed
-# releases by upstream convention. Implementers wanting cryptographic
-# pinning can resolve digests at deploy time.
+# OE component tags follow the requested upstream version. The Bridge reference
+# comes from the validated analyzer catalog manifest, including its immutable
+# digest. Changing Bridge requires updating and validating that manifest first.
 #
 # After running, review:  git diff docker-compose.yml  →  commit.
 set -euo pipefail
@@ -44,6 +43,17 @@ OE_VERSION="${1:-${CUR_OE:-3.2.1.6}}"
 BRIDGE_VERSION="${2:-${CUR_BRIDGE:-3.0.1}}"
 CERTGEN_TAG="main"
 
+BRIDGE_PIN="$(python3 - "$BRIDGE_VERSION" <<'PY_PIN'
+import json,sys
+image=json.load(open('configs/analyzer-catalog-manifest.json'))['bridgeImage']
+expected='itechuw/openelis-analyzer-bridge:'+sys.argv[1]+'@sha256:'
+if not image.startswith(expected):
+    raise SystemExit('Requested Bridge version does not match the validated catalog manifest; update and validate the catalog before release')
+print(image.split(':',1)[1])
+PY_PIN
+)"
+
+
 # Rewrite a single image: line. Matches `image: <repo>:<anything>` (with or
 # without a trailing @sha256:digest) and replaces the whole reference with
 # `repo:tag`. Leading whitespace is preserved.
@@ -56,7 +66,7 @@ update_image() {
 for repo in "${OE_REPOS[@]}"; do
   update_image "$repo" "$OE_VERSION"
 done
-update_image "$BRIDGE_REPO"  "$BRIDGE_VERSION"
+update_image "$BRIDGE_REPO"  "$BRIDGE_PIN"
 update_image "$CERTGEN_REPO" "$CERTGEN_TAG"
 
 echo "Pinned to OE ${OE_VERSION}, bridge ${BRIDGE_VERSION}."

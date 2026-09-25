@@ -1,0 +1,59 @@
+{
+  "sender": "GENEXPERT",
+  "phases": [
+    {
+      "file": "phase-0.hl7",
+      "accession": "SYNTHETIC-genexpert-hl7",
+      "expected": [
+        {
+          "code": "MTB",
+          "value": "NOT DETECTED",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "RIF",
+          "value": "NOT DETECTED",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "COVID19",
+          "value": "NOT DETECTED",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HIV",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "copies/mL"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.hl7",
+      "accession": "QC-SYNTHETIC-genexpert-hl7",
+      "expected": [
+        {
+          "code": "MTB",
+          "value": "NOT DETECTED",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "RIF",
+          "value": "NOT DETECTED",
+          "classification": "PATIENT"
+        },
+        {
+          "code": "COVID19",
+          "value": "NOT DETECTED",
+          "classification": "CONTROL"
+        },
+        {
+          "code": "HIV",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "copies/mL"
+        }
+      ]
+    }
+  ]
+}

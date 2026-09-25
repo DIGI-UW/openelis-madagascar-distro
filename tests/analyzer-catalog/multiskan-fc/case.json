@@ -1,0 +1,50 @@
+{
+  "phases": [
+    {
+      "file": "synthetic-phase-0.csv",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-0-0",
+          "code": "HIV ELISA",
+          "value": "1.25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-0-1",
+          "code": "Dengue IgG",
+          "value": "2.25",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-0-2",
+          "code": "Dengue IgM",
+          "value": "3.25",
+          "classification": "PATIENT"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-phase-1.csv",
+      "expected": [
+        {
+          "accession": "POS-SYNTHETIC-1-0",
+          "code": "HIV ELISA",
+          "value": "Positive",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "POS-SYNTHETIC-1-1",
+          "code": "Dengue IgG",
+          "value": "Positive",
+          "classification": "CONTROL"
+        },
+        {
+          "accession": "POS-SYNTHETIC-1-2",
+          "code": "Dengue IgM",
+          "value": "Positive",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

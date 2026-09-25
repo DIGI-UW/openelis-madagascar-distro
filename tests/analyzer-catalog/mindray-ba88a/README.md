@@ -1,0 +1,1 @@
+Synthetic framed ASTM software fixtures exercise all retained raw analyzer codes, declared units, the existing O.12 Q control rule, and saved restart over the shared TCP listener. Values are test data, not a vendor capture or clinical reference range. RS-232 physical/reconnect acceptance is separate and deferred.
