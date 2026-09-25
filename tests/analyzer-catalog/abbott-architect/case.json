@@ -1,0 +1,87 @@
+{
+  "sender": "SYNTHETIC",
+  "phases": [
+    {
+      "file": "synthetic-phase-0.hl7",
+      "accession": "QC-UNCONFIGURED-0",
+      "expected": [
+        {
+          "code": "HIV",
+          "value": "1.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HBsAg",
+          "value": "2.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HCV",
+          "value": "3.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "TSH",
+          "value": "4.25",
+          "unit": "mIU/L",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "FERR",
+          "value": "5.25",
+          "unit": "ng/mL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-phase-1.hl7",
+      "accession": "QC-UNCONFIGURED-1",
+      "expected": [
+        {
+          "code": "HIV",
+          "value": "1.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HBsAg",
+          "value": "2.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HCV",
+          "value": "3.25",
+          "unit": "",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "TSH",
+          "value": "4.25",
+          "unit": "mIU/L",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "FERR",
+          "value": "5.25",
+          "unit": "ng/mL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        }
+      ]
+    }
+  ]
+}

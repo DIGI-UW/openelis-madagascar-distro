@@ -1,0 +1,1 @@
+Original results.xlsx copied byte-for-byte from analyzer-mock 6df789111d26a122a440892e478b358c8c4738b4 fixtures/quantstudio7/results.xlsx. Synthetic second workbook covers all 17 retained code spellings and CT fallback when Quantity Mean is blank, after saved restart. These are software compatibility checks, not physical instrument qualification.

@@ -121,7 +121,6 @@ services:
             - ./configs/programs/:/var/lib/openelis-global/programs
             - ./configs/configuration:/var/lib/openelis-global/configuration
             - ./configs/menu/menu_config.json:/var/lib/openelis-global/menu/menu_config.json
-            - ./configs/analyzer-profiles:/data/analyzer-profiles:ro
             - analyzer-imports:/data/analyzer-imports
             # Host filesystem for real analyzer file drops (NFS, USB, etc.).
             # Read-only: the bridge must never delete or move source files
@@ -234,16 +233,18 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:3.2.1
+        image: itechuw/openelis-analyzer-bridge:3.2.3@sha256:c9cba99b6e219a433901093de1bc46002688758718f8e0ccf075b4adc8f6c730
         platform: linux/amd64
         depends_on:
             certs:
                 condition: service_completed_successfully
         ports:
             - "8442:8443" # HTTPS API port
-            - "12000:12001" # ASTM listen port
+            - "12000:12001" # Shared ASTM listener
+            - "2575:2575" # Shared HL7 MLLP listener
         volumes:
             - ./configs/astm/configuration.yml:/app/configuration.yml:ro
+            - ./configs/analyzer-profiles:/app/analyzer-profiles:ro
             -  key_trust-store-volume:/etc/openelis-global
             - analyzer-imports:/data/analyzer-imports
             # Host filesystem for real analyzer file drops (NFS, USB, etc.).
@@ -267,6 +268,10 @@ services:
             BRIDGE_SECURITY_USERNAME: admin
             BRIDGE_SECURITY_PASSWORD: ${OE_ADMIN_PASSWORD:-adminADMIN!}
             BRIDGE_FILE_ENABLED: "true"
+            # Distro-owned immutable revisions; writable catalog/connection state remains on bridge-state.
+            BRIDGE_PROFILE_CATALOG_SHIPPED_PATTERN: "file:/app/analyzer-profiles/**/*.json"
+            ORG_ITECH_AHB_MLLP_ENABLED: "true"
+            ORG_ITECH_AHB_MLLP_PORT: "2575"
             # Point the bridge at the named volume mount. Must match the
             # volume mount path above. Spring Boot maps this env var to the
             # bridge.file.state-store-path config property.

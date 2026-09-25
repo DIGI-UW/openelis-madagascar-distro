@@ -1,0 +1,32 @@
+H|\^&|||SYNTHETIC-genexpert-astm|||||||P|1
+P|1
+O|1|SYNTHETIC-genexpert-astm-1||^^^PANEL|||||||Q
+R|1|^ASSAY^^MTB^Synthetic assay|10|||||||20260925120000
+R|2|^ASSAY^^MTB-RIF^Synthetic assay|11|||||||20260925120000
+R|3|^ASSAY^^RIF^Synthetic assay|12|||||||20260925120000
+R|4|^ASSAY^^COVID19^Synthetic assay|13|||||||20260925120000
+R|5|^ASSAY^^SARSCOV2^Synthetic assay|14|||||||20260925120000
+R|6|^ASSAY^^SARS-CoV-2^Synthetic assay|15|||||||20260925120000
+R|7|^ASSAY^^Xpress^Synthetic assay|16|||||||20260925120000
+R|8|^ASSAY^^HIV-VL^Synthetic assay|17|copies/mL||||||20260925120000
+R|9|^ASSAY^^HIV^Synthetic assay|18|copies/mL||||||20260925120000
+R|10|^ASSAY^^HIV-1 Viral^Synthetic assay|19|copies/mL||||||20260925120000
+R|11|^ASSAY^^VL^Synthetic assay|20|||||||20260925120000
+R|12|^ASSAY^^HIV-1 Qual^Synthetic assay|21|||||||20260925120000
+R|13|^ASSAY^^HIV-1 DBS^Synthetic assay|22|||||||20260925120000
+R|14|^ASSAY^^HBV^Synthetic assay|23|IU/mL||||||20260925120000
+R|15|^ASSAY^^HCV Viral^Synthetic assay|24|IU/mL||||||20260925120000
+R|16|^ASSAY^^HPV HR^Synthetic assay|25|||||||20260925120000
+R|17|^ASSAY^^HPV 16_18-45^Synthetic assay|26|||||||20260925120000
+R|18|^ASSAY^^CT^Synthetic assay|27|||||||20260925120000
+R|19|^ASSAY^^NG^Synthetic assay|28|||||||20260925120000
+R|20|^ASSAY^^EV^Synthetic assay|29|||||||20260925120000
+R|21|^ASSAY^^CDIFF^Synthetic assay|30|||||||20260925120000
+R|22|^ASSAY^^MRSA^Synthetic assay|31|||||||20260925120000
+R|23|^ASSAY^^SA^Synthetic assay|32|||||||20260925120000
+R|24|^ASSAY^^TV^Synthetic assay|33|||||||20260925120000
+R|25|^ASSAY^^VANA^Synthetic assay|34|||||||20260925120000
+R|26|^ASSAY^^VANB^Synthetic assay|35|||||||20260925120000
+R|27|^ASSAY^^Mpox^Synthetic assay|36|||||||20260925120000
+R|28|^ASSAY^^WB^Synthetic assay|37|||||||20260925120000
+L|1

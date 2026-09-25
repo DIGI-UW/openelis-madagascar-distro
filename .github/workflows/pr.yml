@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - run: cp .env.example .env
+      - run: bash tests/release/pin-versions.sh
+
       - name: Validate compose syntax + path resolution
         run: |
           docker compose -f docker-compose.yml config > /dev/null
@@ -56,3 +59,24 @@ jobs:
             exit 1
           fi
           echo "Bridge log level keeps clinical payloads out of container logs"
+
+  analyzer-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Read pinned Bridge revision
+        id: bridge
+        run: echo "revision=$(python3 -c 'import json; print(json.load(open("configs/analyzer-catalog-manifest.json"))["bridgeRevision"])')" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: DIGI-UW/openelis-analyzer-bridge
+          ref: ${{ steps.bridge.outputs.revision }}
+          path: bridge-source
+      - name: Verify complete catalog and saved-connection delivery
+        run: |
+          scripts/check-analyzer-catalog.sh "$GITHUB_WORKSPACE/bridge-source"
+          scripts/check-analyzer-runtime.sh "$GITHUB_WORKSPACE/bridge-source"

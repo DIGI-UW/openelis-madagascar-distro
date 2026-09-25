@@ -1,0 +1,1 @@
+Synthetic software acceptance messages, not captured instrument exports. Exercise every retained profile code, patient/control classification and saved restart. GeneXpert control roles use the documented trailing SPM.11 Q/P layout; BS-200 uses the existing distro QC specimen prefix. These fixtures do not establish physical instrument or clinical acceptance.

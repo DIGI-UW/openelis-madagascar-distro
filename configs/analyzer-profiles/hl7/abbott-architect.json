@@ -1,64 +1,150 @@
 {
-  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
-  "profileMeta": {
-    "id": "abbott-architect",
-    "version": "1.2.0",
-    "displayName": "Abbott Architect",
-    "confidence": "LOW"
+  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
+  "profileMeta" : {
+    "id" : "abbott-architect",
+    "version" : "2.0.0",
+    "displayName" : "Abbott Architect",
+    "confidence" : "LOW"
   },
-  "analyzer_name": "Abbott Architect",
-  "manufacturer": "Abbott",
-  "category": "IMMUNOLOGY",
-  "protocol": {
-    "name": "HL7",
-    "version": "2.5.1"
+  "analyzer_name" : "Abbott Architect",
+  "manufacturer" : "Abbott",
+  "category" : "IMMUNOLOGY",
+  "protocol" : {
+    "name" : "HL7",
+    "version" : "2.5.1"
   },
-  "identifier_pattern": "ABBOTT|ARCHITECT",
-  "transport": [
-    "RS-232",
-    "TCP/IP"
-  ],
-  "transport_config": {
-    "RS-232": {},
-    "TCP/IP": {
-      "default_port": 5000,
-      "framing": "MLLP"
+  "identifier_pattern" : "ABBOTT|ARCHITECT",
+  "transport" : [ "RS-232", "TCP/IP" ],
+  "transport_config" : {
+    "RS-232" : {
+      "default_baud_rate" : 9600,
+      "data_bits" : 8,
+      "stop_bits" : 1,
+      "parity" : "NONE",
+      "flow_control" : "NONE",
+      "read_timeout_ms" : 1000,
+      "message_timeout_ms" : 30000,
+      "reconnect_interval_ms" : 5000,
+      "max_reconnect_attempts" : -1,
+      "rts_enabled" : true,
+      "dtr_enabled" : true
+    },
+    "TCP/IP" : {
+      "default_port" : 5000,
+      "framing" : "MLLP"
     }
   },
-  "msh3_pattern": "ARCHITECT|ABBOTT",
-  "default_test_mappings": [
-    {
-      "test_code": "HIV",
-      "test_name_hint": "HIV Antigen/Antibody",
-      "loinc": "75622-1",
-      "unit": ""
-    },
-    {
-      "test_code": "HBsAg",
-      "test_name_hint": "Hepatitis B Surface Antigen",
-      "loinc": "5196-1",
-      "unit": ""
-    },
-    {
-      "test_code": "HCV",
-      "test_name_hint": "Hepatitis C Antibody",
-      "loinc": "16128-1",
-      "unit": ""
-    },
-    {
-      "test_code": "TSH",
-      "test_name_hint": "Thyroid Stimulating Hormone",
-      "loinc": "3016-3",
-      "unit": "mIU/L"
-    },
-    {
-      "test_code": "FERR",
-      "test_name_hint": "Ferritin",
-      "loinc": "2276-4",
-      "unit": "ng/mL"
+  "msh3_pattern" : "ARCHITECT|ABBOTT",
+  "default_test_mappings" : [ {
+    "test_code" : "HIV",
+    "test_name_hint" : "HIV Antigen/Antibody",
+    "loinc" : "75622-1",
+    "unit" : ""
+  }, {
+    "test_code" : "HBsAg",
+    "test_name_hint" : "Hepatitis B Surface Antigen",
+    "loinc" : "5196-1",
+    "unit" : ""
+  }, {
+    "test_code" : "HCV",
+    "test_name_hint" : "Hepatitis C Antibody",
+    "loinc" : "16128-1",
+    "unit" : ""
+  }, {
+    "test_code" : "TSH",
+    "test_name_hint" : "Thyroid Stimulating Hormone",
+    "loinc" : "3016-3",
+    "unit" : "mIU/L"
+  }, {
+    "test_code" : "FERR",
+    "test_name_hint" : "Ferritin",
+    "loinc" : "2276-4",
+    "unit" : "ng/mL"
+  } ],
+  "configDefaults" : {
+    "dataFlow" : "RESULTS_ONLY",
+    "transport" : "TCP/IP",
+    "connectionRole" : "SERVER",
+    "aggregationMode" : "PER_MESSAGE"
+  },
+  "schemaVersion" : "1.0",
+  "communication" : {
+    "mode" : "ANALYZER_INITIATED",
+    "supports_lis_initiated" : false
+  },
+  "capabilities" : {
+    "inboundResults" : true,
+    "outboundOrders" : false,
+    "connectionTest" : true
+  },
+  "controlResultRecognition" : {
+    "mode" : "RULES",
+    "rules" : { }
+  },
+  "connectionFields" : [ {
+    "key" : "dataFlow",
+    "labelKey" : "analyzer.setup.connect.dataFlow",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RESULTS_ONLY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
+    } ]
+  }, {
+    "key" : "transport",
+    "labelKey" : "analyzer.connection.field.transport",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RS-232",
+      "labelKey" : "analyzer.connection.transport.RS-232"
+    }, {
+      "value" : "TCP/IP",
+      "labelKey" : "analyzer.connection.transport.TCP/IP"
+    } ]
+  }, {
+    "key" : "host",
+    "labelKey" : "analyzer.connection.field.host",
+    "helpTextKey" : "analyzer.connection.field.host.help",
+    "inputKind" : "TEXT",
+    "required" : false,
+    "choices" : [ ],
+    "visibleWhen" : {
+      "fieldKey" : "transport",
+      "operator" : "EQUALS",
+      "value" : "TCP/IP"
     }
-  ],
-  "configDefaults": {},
-  "notes": "RESEARCH CORRECTION: Per Abbott documentation, RS-232 Serial is the primary interface. TCP/IP may require Abbott AlinIQ middleware in production. VERIFY with deployment team which transport is available. For RS-232, use ASTM-HTTP Bridge. MSH-3 sending application = 'ARCHITECT' or 'ABBOTT'. Requires MLLP framing for TCP/IP mode.",
-  "verification_required": true
+  }, {
+    "key" : "senderId",
+    "labelKey" : "analyzer.connection.field.senderId",
+    "helpTextKey" : "analyzer.connection.field.senderId.help",
+    "inputKind" : "TEXT",
+    "required" : false,
+    "choices" : [ ],
+    "visibleWhen" : {
+      "fieldKey" : "transport",
+      "operator" : "EQUALS",
+      "value" : "TCP/IP"
+    }
+  }, {
+    "key" : "serialPort",
+    "labelKey" : "analyzer.connection.field.serialPort",
+    "inputKind" : "TEXT",
+    "required" : true,
+    "choices" : [ ],
+    "visibleWhen" : {
+      "fieldKey" : "transport",
+      "operator" : "EQUALS",
+      "value" : "RS-232"
+    }
+  } ],
+  "catalog" : {
+    "revision" : 1,
+    "source" : "SHIPPED",
+    "status" : "ACTIVE",
+    "publishedAt" : "2026-09-25T00:00:00Z",
+    "publishedBy" : "distribution",
+    "recognitionFingerprint" : "sha256:cee662b883620e88895b3ef0445c0d57a8856d5df1d1c0e65ebeace0066cf4c0",
+    "revisionFingerprint" : "sha256:4871642aa482b1f0e23f9419f6b3a7f485553854352c39ad08ea8d270fefb8ba"
+  }
 }

@@ -1,0 +1,4 @@
+WellPosition;SampleID;Abs;Interpretation;TestCode
+;SYNTHETIC-0-0;1.25;;HIV ELISA
+;SYNTHETIC-0-1;2.25;;Dengue IgG
+;SYNTHETIC-0-2;3.25;;Dengue IgM

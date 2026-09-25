@@ -40,9 +40,9 @@ logging:
 # =============================================================================
 # Analyzer-Specific RS232 Serial Configuration Reference
 # =============================================================================
-# Note: RS232 serial port configuration is stored in the OpenELIS database
-# (serial_port_configuration table) and managed through the Analyzer Dashboard.
-# The settings below serve as documentation for supported analyzers.
+# Bridge stores runtime settings in its saved, profile-pinned connections.
+# OpenELIS manages the lab-facing reference and workflow. The settings below
+# are a connection reference, not a separate runtime configuration source.
 #
 # For serial-to-TCP converters (e.g. Moxa, Lantronix), configure the converter
 # to match these RS232 parameters, then configure this bridge for TCP.

@@ -1,0 +1,199 @@
+{
+  "sender": "SYNTHETIC",
+  "phases": [
+    {
+      "file": "synthetic-phase-0.hl7",
+      "accession": "QC-UNCONFIGURED-0",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "1.25",
+          "unit": "10*3/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "RBC",
+          "value": "2.25",
+          "unit": "10*6/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HGB",
+          "value": "3.25",
+          "unit": "g/dL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HCT",
+          "value": "4.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCV",
+          "value": "5.25",
+          "unit": "fL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCH",
+          "value": "6.25",
+          "unit": "pg",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCHC",
+          "value": "7.25",
+          "unit": "g/dL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "PLT",
+          "value": "8.25",
+          "unit": "10*3/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "NEUT",
+          "value": "9.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "LYMPH",
+          "value": "10.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MONO",
+          "value": "11.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "EOS",
+          "value": "12.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "BASO",
+          "value": "13.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-phase-1.hl7",
+      "accession": "QC-UNCONFIGURED-1",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "1.25",
+          "unit": "10*3/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "RBC",
+          "value": "2.25",
+          "unit": "10*6/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HGB",
+          "value": "3.25",
+          "unit": "g/dL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "HCT",
+          "value": "4.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCV",
+          "value": "5.25",
+          "unit": "fL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCH",
+          "value": "6.25",
+          "unit": "pg",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MCHC",
+          "value": "7.25",
+          "unit": "g/dL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "PLT",
+          "value": "8.25",
+          "unit": "10*3/uL",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "NEUT",
+          "value": "9.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "LYMPH",
+          "value": "10.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "MONO",
+          "value": "11.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "EOS",
+          "value": "12.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        },
+        {
+          "code": "BASO",
+          "value": "13.25",
+          "unit": "%",
+          "classification": "PATIENT",
+          "recognitionOutcome": "NOT_EVALUATED"
+        }
+      ]
+    }
+  ]
+}

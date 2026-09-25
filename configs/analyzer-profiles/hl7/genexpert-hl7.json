@@ -1,61 +1,132 @@
 {
-  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
-  "profileMeta": {
-    "id": "genexpert-hl7",
-    "version": "1.2.0",
-    "displayName": "Cepheid GeneXpert (HL7 Mode)",
-    "confidence": "MEDIUM"
+  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
+  "profileMeta" : {
+    "id" : "genexpert-hl7",
+    "version" : "2.0.0",
+    "displayName" : "Cepheid GeneXpert (HL7 Mode)",
+    "confidence" : "MEDIUM"
   },
-  "analyzer_name": "Cepheid GeneXpert (HL7 Mode)",
-  "manufacturer": "Cepheid",
-  "category": "MOLECULAR",
-  "protocol": {
-    "name": "HL7",
-    "version": "2.5"
+  "analyzer_name" : "Cepheid GeneXpert (HL7 Mode)",
+  "manufacturer" : "Cepheid",
+  "category" : "MOLECULAR",
+  "protocol" : {
+    "name" : "HL7",
+    "version" : "2.5"
   },
-  "identifier_pattern": "GENEXPERT|CEPHEID",
-  "transport": [
-    "HTTP",
-    "TCP/IP"
-  ],
-  "transport_config": {
-    "HTTP": {
-      "default_port": 8080
+  "identifier_pattern" : "GENEXPERT|CEPHEID",
+  "transport" : [ "HTTP", "TCP/IP" ],
+  "transport_config" : {
+    "HTTP" : {
+      "default_port" : 8080
     },
-    "TCP/IP": {}
+    "TCP/IP" : { }
   },
-  "communication": {
-    "mode": "ANALYZER_INITIATED",
-    "supports_lis_initiated": true,
-    "notes": "HL7 push (ORU^R01) + query (QBP^Z01/Z03) per Cepheid LIS spec. Analyzer initiates all connections in current OE implementation. Bidirectional QBP support documented but not yet LIS-initiated (OGC-336)."
+  "communication" : {
+    "mode" : "ANALYZER_INITIATED",
+    "supports_lis_initiated" : true
   },
-  "msh3_pattern": "GENEXPERT|CEPHEID",
-  "default_test_mappings": [
-    {
-      "test_code": "MTB",
-      "test_name_hint": "Mycobacterium tuberculosis DNA",
-      "loinc": "85362-2",
-      "unit": ""
-    },
-    {
-      "test_code": "RIF",
-      "test_name_hint": "Rifampin Resistance",
-      "loinc": "46244-0",
-      "unit": ""
-    },
-    {
-      "test_code": "COVID19",
-      "test_name_hint": "SARS-CoV-2 RNA",
-      "loinc": "94500-6",
-      "unit": ""
-    },
-    {
-      "test_code": "HIV",
-      "test_name_hint": "HIV-1 RNA",
-      "loinc": "20447-9",
-      "unit": "copies/mL"
+  "msh3_pattern" : "GENEXPERT|CEPHEID",
+  "default_test_mappings" : [ {
+    "test_code" : "MTB",
+    "test_name_hint" : "Mycobacterium tuberculosis DNA",
+    "loinc" : "85362-2",
+    "unit" : ""
+  }, {
+    "test_code" : "RIF",
+    "test_name_hint" : "Rifampin Resistance",
+    "loinc" : "46244-0",
+    "unit" : ""
+  }, {
+    "test_code" : "COVID19",
+    "test_name_hint" : "SARS-CoV-2 RNA",
+    "loinc" : "94500-6",
+    "unit" : ""
+  }, {
+    "test_code" : "HIV",
+    "test_name_hint" : "HIV-1 RNA",
+    "loinc" : "20447-9",
+    "unit" : "copies/mL"
+  } ],
+  "configDefaults" : {
+    "aggregationMode" : "PER_MESSAGE",
+    "dataFlow" : "RESULTS_ONLY",
+    "connectionRole" : "SERVER",
+    "transport" : "HTTP",
+    "extractionOverrides" : {
+      "specimenPosition" : "FOLLOWING_OBX"
     }
-  ],
-  "configDefaults": {},
-  "notes": "Multi-protocol capable: FILE (primary), ASTM, HL7 all confirmed per Cepheid LIS spec. This config is for HL7 mode via HTTP transport. GeneXpert uses HTTP instead of MLLP framing. MSH-3 sending application = 'GENEXPERT' or 'CEPHEID'. Results are qualitative (Detected/Not Detected) for most assays."
+  },
+  "schemaVersion" : "1.0",
+  "capabilities" : {
+    "inboundResults" : true,
+    "outboundOrders" : true,
+    "connectionTest" : true
+  },
+  "connectionFields" : [ {
+    "key" : "dataFlow",
+    "labelKey" : "analyzer.setup.connect.dataFlow",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RESULTS_ONLY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
+    }, {
+      "value" : "TWO_WAY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.twoWay"
+    } ]
+  }, {
+    "key" : "transport",
+    "labelKey" : "analyzer.connection.field.transport",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "HTTP",
+      "labelKey" : "analyzer.connection.transport.HTTP"
+    }, {
+      "value" : "TCP/IP",
+      "labelKey" : "analyzer.connection.transport.TCP/IP"
+    } ]
+  }, {
+    "key" : "host",
+    "labelKey" : "analyzer.connection.field.host",
+    "inputKind" : "TEXT",
+    "required" : true,
+    "choices" : [ ]
+  }, {
+    "key" : "senderId",
+    "labelKey" : "analyzer.connection.field.senderId",
+    "inputKind" : "TEXT",
+    "required" : false,
+    "choices" : [ ]
+  }, {
+    "key" : "outboundPort",
+    "labelKey" : "analyzer.connection.field.port",
+    "inputKind" : "NUMBER",
+    "required" : false,
+    "choices" : [ ],
+    "visibleWhen" : {
+      "fieldKey" : "dataFlow",
+      "operator" : "EQUALS",
+      "value" : "TWO_WAY"
+    }
+  } ],
+  "controlResultRecognition" : {
+    "mode" : "RULES",
+    "rules" : {
+      "specimen-role-control" : {
+        "ruleType" : "FIELD_EQUALS",
+        "targetField" : "SPM.11",
+        "operand" : "Q"
+      }
+    }
+  },
+  "catalog" : {
+    "revision" : 1,
+    "source" : "SHIPPED",
+    "status" : "ACTIVE",
+    "publishedAt" : "2026-09-25T00:00:00Z",
+    "publishedBy" : "distribution",
+    "recognitionFingerprint" : "sha256:e725fedcf58f003446612782b8a88786c3f4b1453cbd57f4d8c6c2e9323e76d0",
+    "revisionFingerprint" : "sha256:1e432f68cc4a9dcec413592388e85a75a1fb8cbeb66fac89ef7adb512b6668a3"
+  }
 }

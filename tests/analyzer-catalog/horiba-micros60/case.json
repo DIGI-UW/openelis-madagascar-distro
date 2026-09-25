@@ -1,0 +1,113 @@
+{
+  "sender": "SYNTHETIC-horiba-micros60",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-horiba-micros60-0",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "PATIENT",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "PLT",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "LYMPH",
+          "value": "15",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "MID",
+          "value": "16",
+          "classification": "PATIENT",
+          "unit": "%"
+        },
+        {
+          "code": "GRAN",
+          "value": "17",
+          "classification": "PATIENT",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-horiba-micros60-1",
+      "expected": [
+        {
+          "code": "WBC",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "RBC",
+          "value": "11",
+          "classification": "CONTROL",
+          "unit": "10^6/uL"
+        },
+        {
+          "code": "HGB",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        },
+        {
+          "code": "HCT",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "PLT",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "10^3/uL"
+        },
+        {
+          "code": "LYMPH",
+          "value": "15",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "MID",
+          "value": "16",
+          "classification": "CONTROL",
+          "unit": "%"
+        },
+        {
+          "code": "GRAN",
+          "value": "17",
+          "classification": "CONTROL",
+          "unit": "%"
+        }
+      ]
+    }
+  ]
+}

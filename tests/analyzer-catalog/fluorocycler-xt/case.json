@@ -1,0 +1,92 @@
+{
+  "phases": [
+    {
+      "file": "mock-results.xlsx",
+      "expected": [
+        {
+          "accession": "DEV01263000000000001",
+          "observations": [
+            {
+              "code": "VIH-1",
+              "value": "1250",
+              "classification": "PATIENT"
+            },
+            {
+              "code": "VIH-1",
+              "value": "Valid",
+              "classification": "PATIENT"
+            }
+          ]
+        },
+        {
+          "accession": "DEV01263000000000002",
+          "observations": [
+            {
+              "code": "VIH-1",
+              "value": "450",
+              "classification": "PATIENT"
+            },
+            {
+              "code": "VIH-1",
+              "value": "Valid",
+              "classification": "PATIENT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "synthetic-all-assays.xlsx",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-ASSAY-0",
+          "code": "VIH-1",
+          "value": "10",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-1",
+          "code": "MPXV",
+          "value": "11",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-2",
+          "code": "Mpox",
+          "value": "12",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-3",
+          "code": "MPox",
+          "value": "13",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-4",
+          "code": "CHIKV",
+          "value": "14",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-5",
+          "code": "DENV",
+          "value": "15",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "SYNTHETIC-ASSAY-6",
+          "code": "ZIKV",
+          "value": "16",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "C+-SYNTHETIC-CONTROL",
+          "code": "VIH-1",
+          "value": "100",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

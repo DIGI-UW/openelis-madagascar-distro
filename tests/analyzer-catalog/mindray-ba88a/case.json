@@ -1,0 +1,77 @@
+{
+  "sender": "SYNTHETIC-mindray-ba88a",
+  "phases": [
+    {
+      "file": "phase-0.astm",
+      "accession": "SYNTHETIC-mindray-ba88a-0",
+      "expected": [
+        {
+          "code": "GLU",
+          "value": "10",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "CREA",
+          "value": "11",
+          "classification": "PATIENT",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "ALT",
+          "value": "12",
+          "classification": "PATIENT",
+          "unit": "U/L"
+        },
+        {
+          "code": "AST",
+          "value": "13",
+          "classification": "PATIENT",
+          "unit": "U/L"
+        },
+        {
+          "code": "ALB",
+          "value": "14",
+          "classification": "PATIENT",
+          "unit": "g/dL"
+        }
+      ]
+    },
+    {
+      "file": "phase-1.astm",
+      "accession": "SYNTHETIC-mindray-ba88a-1",
+      "expected": [
+        {
+          "code": "GLU",
+          "value": "10",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "CREA",
+          "value": "11",
+          "classification": "CONTROL",
+          "unit": "mg/dL"
+        },
+        {
+          "code": "ALT",
+          "value": "12",
+          "classification": "CONTROL",
+          "unit": "U/L"
+        },
+        {
+          "code": "AST",
+          "value": "13",
+          "classification": "CONTROL",
+          "unit": "U/L"
+        },
+        {
+          "code": "ALB",
+          "value": "14",
+          "classification": "CONTROL",
+          "unit": "g/dL"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "phases": [
+    {
+      "file": "results.csv",
+      "expected": [
+        {
+          "accession": "DEV01265000000000101",
+          "code": "TSH",
+          "value": "3.45",
+          "classification": "PATIENT",
+          "unit": "mIU/L"
+        },
+        {
+          "accession": "DEV01265000000000102",
+          "code": "TSH",
+          "value": "<2",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "DEV01265000000000103",
+          "code": "TSH",
+          "value": "0.57",
+          "classification": "PATIENT",
+          "unit": "mIU/L"
+        }
+      ]
+    },
+    {
+      "file": "synthetic-followup.csv",
+      "expected": [
+        {
+          "accession": "SYNTHETIC-HCG",
+          "code": "β-hCG",
+          "value": "12.5",
+          "unit": "mIU/mL",
+          "classification": "PATIENT"
+        },
+        {
+          "accession": "POS-SYNTHETIC",
+          "code": "TSH",
+          "value": "4.2",
+          "unit": "mIU/L",
+          "classification": "CONTROL"
+        }
+      ]
+    }
+  ]
+}

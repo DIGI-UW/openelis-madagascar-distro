@@ -1,97 +1,110 @@
 {
-  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
-  "profileMeta": {
-    "id": "wondfo-csv",
-    "version": "1.0.0",
-    "displayName": "Wondfo Finecare FS-205 (CSV)",
-    "confidence": "HIGH",
-    "manufacturer": "Wondfo Biotech",
-    "validation_status": "PENDING - profile built from OGC-344 spec (40-column CSV, 4 real records validated). Header names inferred from column descriptions; must be validated against real history.csv."
+  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
+  "profileMeta" : {
+    "id" : "wondfo-csv",
+    "version" : "1.0.0",
+    "displayName" : "Wondfo Finecare FS-205 (CSV)",
+    "confidence" : "HIGH",
+    "manufacturer" : "Wondfo Biotech"
   },
-  "category": "IMMUNOLOGY",
-  "protocol": {
-    "name": "FILE",
-    "format": "CSV"
+  "category" : "IMMUNOLOGY",
+  "protocol" : {
+    "name" : "FILE",
+    "format" : "CSV"
   },
-  "supported_extensions": [
-    ".csv"
-  ],
-  "column_mapping": {
-    "Serial Number": "deviceSerialNumber",
-    "SerialNumber": "deviceSerialNumber",
-    "Sample Number": "sampleId",
-    "SampleNumber": "sampleId",
-    "Sample ID": "sampleId",
-    "Test Name": "testCode",
-    "TestName": "testCode",
-    "Result": "result",
-    "Unit": "unit",
-    "Reference Range": "referenceRange",
-    "ReferenceRange": "referenceRange",
-    "Date/Time": "dateTime",
-    "Date Time": "dateTime",
-    "Reagent Lot": "reagentLot",
-    "ReagentLot": "reagentLot",
-    "QC Status": "qcStatus"
+  "supported_extensions" : [ ".csv" ],
+  "column_mapping" : {
+    "Sample Number" : "sampleId",
+    "SampleNumber" : "sampleId",
+    "Sample ID" : "sampleId",
+    "Test Name" : "testCode",
+    "TestName" : "testCode",
+    "Result" : "result",
+    "Unit" : "units",
+    "Date/Time" : "testDate",
+    "Date Time" : "testDate"
   },
-  "default_test_mappings": [
-    {
-      "test_code": "TSH",
-      "test_name_hint": "Thyroid Stimulating Hormone",
-      "loinc": "11580-8",
-      "unit": "mIU/L"
-    },
-    {
-      "test_code": "β-hCG",
-      "test_name_hint": "Beta-Human Chorionic Gonadotropin",
-      "loinc": "21198-7",
-      "unit": "mIU/mL"
-    }
-  ],
-  "configDefaults": {
-    "fileFormat": "CSV",
-    "delimiter": ";",
-    "hasHeader": true,
-    "skipRows": 1,
-    "qcRules": [
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "NEG",
-        "isActive": true,
-        "sortOrder": 1
+  "default_test_mappings" : [ {
+    "test_code" : "TSH",
+    "test_name_hint" : "Thyroid Stimulating Hormone",
+    "loinc" : "11580-8",
+    "unit" : "mIU/L"
+  }, {
+    "test_code" : "β-hCG",
+    "test_name_hint" : "Beta-Human Chorionic Gonadotropin",
+    "loinc" : "21198-7",
+    "unit" : "mIU/mL"
+  } ],
+  "configDefaults" : {
+    "fileFormat" : "CSV",
+    "delimiter" : ";",
+    "hasHeader" : true,
+    "skipRows" : 1,
+    "dataFlow" : "RESULTS_ONLY",
+    "filePattern" : "*.{csv,CSV}"
+  },
+  "schemaVersion" : "1.0",
+  "capabilities" : {
+    "inboundResults" : true,
+    "outboundOrders" : false,
+    "connectionTest" : true
+  },
+  "result_value_order" : [ "result" ],
+  "controlResultRecognition" : {
+    "mode" : "RULES",
+    "rules" : {
+      "control-prefix-1" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "NEG"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "POS",
-        "isActive": true,
-        "sortOrder": 2
+      "control-prefix-2" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "POS"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "NC",
-        "isActive": true,
-        "sortOrder": 3
+      "control-prefix-3" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "NC"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "PC",
-        "isActive": true,
-        "sortOrder": 4
+      "control-prefix-4" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "PC"
       },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "BLANC",
-        "isActive": true,
-        "sortOrder": 5
+      "control-prefix-5" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "BLANC"
       }
-    ]
+    }
   },
-  "parsing_notes": {
-    "metadata_row": "Row 0 is a metadata line containing instrument serial number. Skipped via skipRows=1.",
-    "comparison_operators": "Result values may contain comparison operators (e.g. '<2', '>100'). These are stored as-is (string storage).",
-    "reference_range_format": "Column 6 may contain pipe-delimited interpretive criteria (e.g. 'Négatif：<5 | Indeterminate：5≤X≤25 | Positif：>25').",
-    "duplicate_key": "Serial Number (Col 0) + Date/Time (Col 21) + Test Name (Col 3)",
-    "phi_exclusion": "Columns 25-27 (Patient Name, Age, Gender) must NOT be imported.",
-    "encoding": "UTF-8 (with Latin-1 fallback per OGC-344 spec)"
+  "connectionFields" : [ {
+    "key" : "dataFlow",
+    "labelKey" : "analyzer.setup.connect.dataFlow",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RESULTS_ONLY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
+    } ]
+  }, {
+    "key" : "directory",
+    "labelKey" : "analyzer.connection.field.directory",
+    "inputKind" : "FILE_PATH",
+    "required" : true,
+    "choices" : [ ]
+  }, {
+    "key" : "filePattern",
+    "labelKey" : "analyzer.connection.field.filePattern",
+    "helpTextKey" : "analyzer.connection.field.filePattern.help",
+    "inputKind" : "TEXT",
+    "required" : true,
+    "choices" : [ ]
+  } ],
+  "catalog" : {
+    "revision" : 1,
+    "source" : "SHIPPED",
+    "status" : "ACTIVE",
+    "publishedAt" : "2026-09-25T00:00:00Z",
+    "publishedBy" : "distribution",
+    "revisionFingerprint" : "sha256:fda7842e5ae5a3da60d0b63b454096eeccd5ddeaead585a935812c15516bf740",
+    "recognitionFingerprint" : "sha256:8b32480210da73ca9cb45f64787c864cbfa9b9c8569d09a05cf62a9828135898"
   }
 }

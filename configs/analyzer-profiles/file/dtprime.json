@@ -1,75 +1,87 @@
 {
-  "$schema": "https://openelis-global.org/schemas/analyzer-defaults/1.0",
-  "profileMeta": {
-    "id": "dtprime",
-    "version": "1.0.0",
-    "displayName": "DNA Technology DT-Prime",
-    "confidence": "MEDIUM",
-    "manufacturer": "DNA Technology"
+  "$schema" : "https://openelis-global.org/contracts/analyzer/v1/analyzer-profile.schema.json",
+  "profileMeta" : {
+    "id" : "dtprime",
+    "version" : "1.0.0",
+    "displayName" : "DNA Technology DT-Prime",
+    "confidence" : "MEDIUM",
+    "manufacturer" : "DNA Technology"
   },
-  "protocol": {
-    "name": "FILE",
-    "format": "XML"
+  "protocol" : {
+    "name" : "FILE",
+    "format" : "XML"
   },
-  "category": "MOLECULAR",
-  "supported_extensions": [
-    ".xml"
-  ],
-  "column_mapping": {
-    "SampleID": "sampleId",
-    "WellPosition": "position",
-    "Result": "result",
-    "Interpretation": "interpretation"
+  "category" : "MOLECULAR",
+  "supported_extensions" : [ ".xml" ],
+  "column_mapping" : {
+    "SampleID" : "sampleId",
+    "WellPosition" : "position",
+    "Result" : "result",
+    "Interpretation" : "interpretation"
   },
-  "xml_schema": {
-    "encoding": "windows-1251",
-    "root": "package",
-    "xpath": {
-      "plate": "/package/data/plate",
-      "cell": "cell",
-      "cell_name": "@name",
-      "cell_x": "@x",
-      "cell_y": "@y",
-      "cell_state": "@state",
-      "test_value": "test/@value",
-      "result_value": "test/result/@value"
-    },
-    "result_values": {
-      "+": "Detected",
-      "-": "Not Detected"
-    },
-    "qc_patterns": {
-      "negative_control": "C-",
-      "positive_control": "C+"
+  "configDefaults" : {
+    "fileFormat" : "XML",
+    "dataFlow" : "RESULTS_ONLY",
+    "filePattern" : "*.{xml,XML}"
+  },
+  "schemaVersion" : "1.0",
+  "capabilities" : {
+    "inboundResults" : true,
+    "outboundOrders" : false,
+    "connectionTest" : false
+  },
+  "connectionFields" : [ {
+    "key" : "dataFlow",
+    "labelKey" : "analyzer.setup.connect.dataFlow",
+    "inputKind" : "SELECT",
+    "required" : true,
+    "choices" : [ {
+      "value" : "RESULTS_ONLY",
+      "labelKey" : "analyzer.setup.connect.dataFlow.resultsOnly"
+    } ]
+  }, {
+    "key" : "directory",
+    "labelKey" : "analyzer.connection.field.directory",
+    "inputKind" : "FILE_PATH",
+    "required" : true,
+    "choices" : [ ]
+  }, {
+    "key" : "filePattern",
+    "labelKey" : "analyzer.connection.field.filePattern",
+    "helpTextKey" : "analyzer.connection.field.filePattern.help",
+    "inputKind" : "TEXT",
+    "required" : true,
+    "choices" : [ ]
+  } ],
+  "controlResultRecognition" : {
+    "mode" : "RULES",
+    "rules" : {
+      "control-rule-1" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "C+"
+      },
+      "control-rule-2" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "C-"
+      },
+      "control-rule-3" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "NTC"
+      },
+      "control-rule-4" : {
+        "ruleType" : "SPECIMEN_ID_PREFIX",
+        "operand" : "PTC"
+      }
     }
   },
-  "configDefaults": {
-    "fileFormat": "XML",
-    "qcRules": [
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "C+",
-        "isActive": true,
-        "sortOrder": 1
-      },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "C-",
-        "isActive": true,
-        "sortOrder": 2
-      },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "NTC",
-        "isActive": true,
-        "sortOrder": 3
-      },
-      {
-        "ruleType": "SPECIMEN_ID_PREFIX",
-        "operand": "PTC",
-        "isActive": true,
-        "sortOrder": 4
-      }
-    ]
+  "default_test_mappings" : [ ],
+  "catalog" : {
+    "revision" : 1,
+    "source" : "SHIPPED",
+    "status" : "INACTIVE",
+    "publishedAt" : "2026-09-25T00:00:00Z",
+    "publishedBy" : "distribution",
+    "recognitionFingerprint" : "sha256:b8ebd7eaed82d95b97b989b9ae17f5c646643999fb73cac344bd25dd15a00ae8",
+    "revisionFingerprint" : "sha256:207adefdb3c2312f5b6bb4b228745631afe6e0feaa8af71a47650b1d78f030cb"
   }
 }
