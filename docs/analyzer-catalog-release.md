@@ -16,7 +16,7 @@ to the latest definition require explicit profile selection and local binding re
 
 ## Required compatibility
 
-Bridge 3.2.3 supports explicitly unconfigured control recognition and a saved or
+Bridge 3.2.3 and later support explicitly unconfigured control recognition and a saved or
 profile-default FILE assay selection. Five migrated HL7 profiles use explicit
 empty rules because their previous definitions provided none. This does not mean
 that instruments never send controls. Their recognition evidence is NOT_EVALUATED,

@@ -233,13 +233,13 @@ services:
 
     openelis-analyzer-bridge:
         container_name: openelis-analyzer-bridge
-        image: itechuw/openelis-analyzer-bridge:3.2.3@sha256:c9cba99b6e219a433901093de1bc46002688758718f8e0ccf075b4adc8f6c730
+        image: itechuw/openelis-analyzer-bridge:3.2.6@sha256:b6357db759de4514027a3b9b71f441a2e83561f5de4ad7d527b901f2dbfcc639
         platform: linux/amd64
         depends_on:
             certs:
                 condition: service_completed_successfully
         ports:
-            - "8442:8443" # HTTPS API port
+            - "127.0.0.1:8442:8443" # HTTPS API, on this host only; operators use the bridge.* nginx host
             - "12000:12001" # Shared ASTM listener
             - "2575:2575" # Shared HL7 MLLP listener
         volumes:
