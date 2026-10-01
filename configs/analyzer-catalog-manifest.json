@@ -1,5 +1,5 @@
 {
-  "bridgeRevision": "52913375f8aa7d7b344c6e7961273752d7f2dcd0",
+  "bridgeRevision": "5583a7274e6ab11cb7dc4f5601573058bf30ec8a",
   "requiredProfileIds": [
     "abbott-architect",
     "dtprime",
@@ -82,5 +82,5 @@
   "inactiveProfileIds": [
     "dtprime"
   ],
-  "bridgeImage": "itechuw/openelis-analyzer-bridge:3.2.3@sha256:c9cba99b6e219a433901093de1bc46002688758718f8e0ccf075b4adc8f6c730"
+  "bridgeImage": "itechuw/openelis-analyzer-bridge:3.2.6@sha256:b6357db759de4514027a3b9b71f441a2e83561f5de4ad7d527b901f2dbfcc639"
 }
