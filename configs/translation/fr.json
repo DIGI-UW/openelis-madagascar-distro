@@ -1,4 +1,5 @@
 {
+  "error.invalid.calculation.logic": "The calculation is invalid. Check its operations and numeric values.",
   "barcode.label.error.batch.limit": "This print job has more than {max} labels. Print fewer labels at a time.",
   "barcode.label.error.quantity.limit": "Each label quantity can be at most {max}.",
   "analyzer.mapping.error.profileUnavailable": "The analyzer profile could not be read. Retry confirmation when the Bridge is available.",
@@ -8542,7 +8543,7 @@
   "systemuserrole.copypermissions.placeholder": "Copier les permissions d'un utilisateur",
   "systemuserrole.instruction.1": "Il existe deux types de rôles. Les rôles globaux qui sont définis pour l'ensemble de l'application et les rôles des unités de laboratoire qui peuvent être définis pour toutes les unités de laboratoire ou des unités spécifiques.",
   "systemuserrole.instruction.2": "Les rôles globaux disponibles sont : Administrateur global (accès à toutes les fonctions d'administration), Audit Trail (accès à tous les audits), Administrateur de comptes utilisateur (accès à toutes les fonctionnalités d'administration des comptes utilisateur, mais pas à d'autres fonctions d'administration).",
-  "systemuserrole.instruction.3": "Les rôles des unités de laboratoire sont : Réception (accès aux onglets Commande, Patient et Non-conformité), Résultats (accès aux onglets Plan de travail, Non-conformité et Résultats), Validation (accès aux onglets Validation et Non-conformité), Rapports (accès à l'onglet Rapports sauf export CSV uniquement disponible pour les administrateurs globaux).",
+  "systemuserrole.instruction.labUnitRoles": "The Lab Unit Roles are: Reception (access to the Order, Patient, and Non-Conformity tabs), Results (access to the Work Plan, Non-Conformity, and Results tabs), Validation (access to the Validation and Non-Conformity tabs), and Reports (reporting access for the assigned lab units). CSV exports without a lab unit filter require the Reports role for All Lab Units or the Global Administrator role.",
   "systemuserrole.instruction.4": "Pour attribuer des rôles d'unités de laboratoire, sélectionnez toutes les unités de laboratoire ou l'unité spécifique dans le menu déroulant et sélectionnez les rôles que vous souhaitez définir.",
   "systemuserrole.instruction.5": "Vous pouvez également utiliser la fonctionnalité de copie des autorisations pour copier les autorisations d'un utilisateur existant. Assurez-vous d'avoir rempli toutes les informations ci-dessus et entrez le nom d'utilisateur dont vous souhaitez copier les autorisations dans la case et cliquez sur appliquer.",
   "systemuserrole.newpermissions": "Ajouter une nouvelle permission",
